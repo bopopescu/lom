@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-110461151-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-110461151-1');
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <script>
+        (function (factory) {
+            if (typeof define === 'function' && define.amd) {
+                // AMD (Register as an anonymous module)
+                define(['jquery'], factory);
+            } else if (typeof exports === 'object') {
+                // Node/CommonJS
+                module.exports = factory(require('jquery'));
+            } else {
+                // Browser globals
+                factory(jQuery);
+            }
+        }(function ($) {
+
+            var pluses = /\+/g;
+
+            function encode(s) {
+                return config.raw ? s : encodeURIComponent(s);
+            }
+
+            function decode(s) {
+                return config.raw ? s : decodeURIComponent(s);
+            }
+
+            function stringifyCookieValue(value) {
+                return encode(config.json ? JSON.stringify(value) : String(value));
+            }
+
+            function parseCookieValue(s) {
+                if (s.indexOf('"') === 0) {
+                    // This is a quoted cookie as according to RFC2068, unescape...
+                    s = s.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                }
+
+                try {
+                    // Replace server-side written pluses with spaces.
+                    // If we can't decode the cookie, ignore it, it's unusable.
+                    // If we can't parse the cookie, ignore it, it's unusable.
+                    s = decodeURIComponent(s.replace(pluses, ' '));
+                    return config.json ? JSON.parse(s) : s;
+                } catch(e) {}
+            }
+
+            function read(s, converter) {
+                var value = config.raw ? s : parseCookieValue(s);
+                return $.isFunction(converter) ? converter(value) : value;
+            }
+
+            var config = $.cookie = function (key, value, options) {
+
+                // Write
+
+                if (arguments.length > 1 && !$.isFunction(value)) {
+                    options = $.extend({}, config.defaults, options);
+
+                    if (typeof options.expires === 'number') {
+                        var days = options.expires, t = options.expires = new Date();
+                        t.setMilliseconds(t.getMilliseconds() + days * 864e+5);
+                    }
+
+                    return (document.cookie = [
+                        encode(key), '=', stringifyCookieValue(value),
+                        options.expires ? '; expires=' + options.expires.toUTCString() : '', // use expires attribute, max-age is not supported by IE
+                        options.path    ? '; path=' + options.path : '',
+                        options.domain  ? '; domain=' + options.domain : '',
+                        options.secure  ? '; secure' : ''
+                    ].join(''));
+                }
+
+                // Read
+
+                var result = key ? undefined : {},
+                    // To prevent the for loop in the first place assign an empty array
+                    // in case there are no cookies at all. Also prevents odd result when
+                    // calling $.cookie().
+                    cookies = document.cookie ? document.cookie.split('; ') : [],
+                    i = 0,
+                    l = cookies.length;
+
+                for (; i < l; i++) {
+                    var parts = cookies[i].split('='),
+                        name = decode(parts.shift()),
+                        cookie = parts.join('=');
+
+                    if (key === name) {
+                        // If second argument (value) is a function it's a converter...
+                        result = read(cookie, value);
+                        break;
+                    }
+
+                    // Prevent storing a cookie that we couldn't decode.
+                    if (!key && (cookie = read(cookie)) !== undefined) {
+                        result[name] = cookie;
+                    }
+                }
+
+                return result;
+            };
+
+            config.defaults = {};
+
+            $.removeCookie = function (key, options) {
+                // Must not alter options, thus extending a fresh object...
+                $.cookie(key, '', $.extend({}, options, { expires: -1 }));
+                return !$.cookie(key);
+            };
+
+        }));
+    </script>
+    <script id="work-template" type="text/template">
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <title></title>
+        </head>
+        <body></body>
+        </html>
+    </script>
+    <script type="text/javascript">
+        var concepts = JSON.parse('{{ concepts|safe }}');
+        var tasks = JSON.parse('{{ tasks|safe }}');
+        var grades = JSON.parse('{{ grades|safe }}');
+
+        c = '{{ concept_id|safe }}'
+        if (c != '') {
+            var url_concept = JSON.parse(c);
+        }
+
+        c = '{{ tasks_group|safe }}'
+        if (c != '') {
+            var url_tasks_group = JSON.parse(c);
+        }
+
+        c = '{{ session|safe }}'
+        if (c != '') {
+            var session = JSON.parse(c);
+        }
+
+        c = '{{ user|safe }}'
+        if (c != '') {
+            var user = JSON.parse(c);
+        }
+
+        sel_tasks = {};
+
+        function get_index() {
+            index = 0;
+            for (task in sel_tasks) {
+                if (sel_tasks[task]['index'] > index) {
+                    index = sel_tasks[task]['index'];
+                }
+            }
+            return index + 1;
+        }
+
+        function get_task_by_index(index) {
+            for (task in sel_tasks) {
+                if (sel_tasks[task]['index'] == index) {
+                    return sel_tasks[task];
+                }
+            }
+            return null;
+        }
+
+        function get_task_id_by_index(index) {
+            for (task in sel_tasks) {
+                if (sel_tasks[task]['index'] == index) {
+                    return task;
+                }
+            }
+            return "";
+        }
+
+        function get_current_link() {
+            // Извлекаем словарь, готовый для формирования параметроы ссылки из него
+            url_params_dict = {};
+            for (task_id in sel_tasks) {
+                count = sel_tasks[task_id]['tasks'].length;
+                url_params_dict[task_id] = count;
+            }
+
+            params_str = $.param(url_params_dict);
+            return window.location.hostname + '/work/' + "?" + params_str;
+        }
+
+    </script>
+    <script type="text/javascript">
+            $(document).ready(function() {
+            // Заполняем лоции для нпереданного класса или класса по-умолчанию
+            default_grade = 'sedmoj';
+            grade = default_grade;
+            if (url_concept != undefined) {
+                for (g in grades) {
+                    if (grades[g]['concepts'].indexOf(url_concept) >= 0) {
+                        grade = g;
+                        break;
+                    }
+                }
+            } else {
+                grd = $.cookie('grade');
+                if (grd != null) {
+                    grade = grd;
+                }
+            }
+
+            // Если запрашивается ранее набранная группа тасков, то...
+            if (url_tasks_group != undefined) {
+                sel_tasks = {};
+                get_tasks_from_server(url_tasks_group);
+            // Если были сохраненные в куках таски, то....
+            } else {
+                tasks_in_cookies = getTasksInCookies();
+
+                if (Object.keys(tasks_in_cookies).length > 0) {
+                    sel_tasks = {};
+                    get_tasks_from_server(tasks_in_cookies);
+                } else {
+                    updateLayout();
+                }
+            }
+
+            // Кнопки классов
+            for(var g in grades) {
+                classStr = 'btn grade-button btn-secondary btn-sm rounded ';
+                if (g == grade) {
+                    classStr += 'active'
+                } else {
+                    classStr += 'notActive'
+                }
+                $('<a></a>')
+                    .attr('type', 'button')
+                    .attr('name', g)
+                    .addClass(classStr)
+                    .text(grades[g].title)
+                    .appendTo('#classes-container');
+            }
+
+            updateThemeSelect(grade);
+
+            url_concept = undefined;
+
+            $('#btn-link').on('click', onLinkCopyClick);
+            $('#btn-print').on('click', onPrintClick);
+
+
+
+            // Обновляем таски выбранной лоции
+            updateTasks();
+
+            $('.grade-button').on('click', function(){
+                if ($(this).hasClass('active') == false) {
+                    $('.grade-button').removeClass('active');
+                    $('.grade-button').addClass('notActive');
+                    $(this).addClass('active');
+                    grade = $(this).attr('name');
+                    updateThemeSelect(grade);
+                    $.cookie('grade', grade, { expires: 21 });
+                    updateLayout()
+                    updateTasks();
+                    ga('send', 'event', 'Класс', 'Смена');
+                }
+            });
+
+            function getTasksInCookies() {
+                res = {};
+                for (task_id in tasks) {
+                    if ( $.cookie(task_id) != null ) {
+                        res[task_id] = $.cookie(task_id)
+                    }
+                }
+                return res;
+            }
+
+            function onPrintClick() {
+                $preview = $('#preview').clone();
+                $preview.find('.task-remove-button').remove();
+                $preview.find('#buttons').remove();
+                $preview.find('.task-item').css('padding-bottom', '15px');
+
+                preview_html = $preview.html();
+                base_html = $('#work-template').text();
+
+                pos = base_html.indexOf('</body>');
+                html = base_html.slice(0, pos) + preview_html + base_html.slice(pos);
+                var newWindow = window.open("");
+                newWindow.document.write(html);
+
+                ga('send', 'event', 'Подборка', 'Распечатать');
+            }
+
+            function onLinkCopyClick() {
+                link = get_current_link();
+                $('#copy-link')
+                    .removeClass('d-none');
+                $('#copy-link-textarea')
+                    .text(link)
+                    .width('100%')
+                    .on('blur', onCopyLinkTextAreaLeave)
+                    .focus()
+                    .select();
+                document.execCommand('copy');
+
+                ga('send', 'event', 'Подборка', 'ПолучитьСсылку');
+            }
+
+            function onCopyLinkTextAreaLeave() {
+                $('#copy-link')
+                    .addClass('d-none');
+            }
+
+            function onRemoveTaskFromPreviewClick() {
+                task_id = event.target.id;
+                delete sel_tasks[task_id];
+                updateLayout();
+                updateTasks();
+                updatePreview();
+                updateCookies();
+                ga('send', 'event', 'Задание', 'Удаление');
+            }
+
+            function updateLayout() {
+
+                concept_selected = true;
+                if (url_concept == undefined) {
+                    if ($('#themeSelect').find(".active").length == 0) {
+                        concept_selected = false;
+                    }
+                }
+
+                task_selected = false;
+
+                for (task in sel_tasks) {
+
+                    if (sel_tasks[task]['tasks'].length > 0) {
+                        task_selected = true;
+                        break;
+                    }
+                }
+
+                if (concept_selected == true) {
+                    $('#tasks').removeClass('d-none');
+                } else {
+                    $('#tasks').addClass('d-none');
+                }
+
+                if (task_selected == true) {
+                    $('#preview').removeClass('d-none');
+                } else {
+                    $('#preview').addClass('d-none');
+                }
+
+                if (task_selected == false && concept_selected == false) {
+                    $('#concepts')
+                        .removeClass('col-lg-3 col-lg-6')
+                        .addClass('col-lg-12');
+                }
+
+                if (task_selected == false && concept_selected == true) {
+                    $('#concepts')
+                        .removeClass('col-lg-3 col-lg-12')
+                        .addClass('col-lg-6');
+                }
+
+                if (task_selected == true && concept_selected == true) {
+                    $('#concepts')
+                        .removeClass('col-lg-6 col-lg-12')
+                        .addClass('col-lg-3');
+                    $('#preview')
+                        .removeClass('col-lg-6 col-lg-12')
+                        .addClass('col-lg-3');
+                }
+
+                if (task_selected == true && concept_selected == false) {
+                    $('#concepts')
+                        .removeClass('col-lg-3 col-lg-12')
+                        .addClass('col-lg-6');
+                    $('#preview')
+                        .removeClass('col-lg-3 col-lg-12')
+                        .addClass('col-lg-6');
+                }
+            }
+
+            function updateThemeSelect(grd) {
+                $('#themeSelect').find('div').remove();
+                grade_concepts = grades[grd].concepts;
+                classStr = 'col-12 p-2 mb-1 item rounded ';
+                for (i = 0; i < grade_concepts.length; i++) {
+                    concept = grade_concepts[i];
+
+                    if (concept == url_concept) {
+                        cls = classStr + ' active';
+                    } else {
+                        cls = classStr;
+                    }
+                    $('#themeSelect')
+                        .append($("<div></div>")
+                            .attr('value', concept)
+                            .addClass(cls)
+                            .text(concepts[concept].title))
+                            .find('div')
+                                .click(onThemeSelectClick);
+                }
+            }
+
+            function get_tasks_from_server(tasks_to_obtain) {
+                $.ajax({
+                    url: '/ajax/tasks/',
+                    data: tasks_to_obtain,
+                    dataType: 'json',
+                    success: function (data) {
+
+                        for (task_loaded in data['tasks']) {
+                            tasksArray = data['tasks'][task_loaded];
+                            task_info = {};
+                            task_info['tasks'] = (task_loaded in sel_tasks ? sel_tasks[task_loaded]['tasks'] : []).concat(tasksArray);
+                            task_info['index'] = get_index();
+                            sel_tasks[task_loaded] = task_info;
+                        }
+                        updateLayout();
+                        updatePreview();
+                        updateCookies();
+                        updateSelectedTasks()
+                    }
+                });
+            }
+
+            function updateCookies() {
+                cs = $.cookie();
+                for (c in cs) {
+                    if ( (c != 'grade') && (c[0] != '_' )  ) {
+                        $.removeCookie(c);
+                    }
+                }
+                for (task_id in sel_tasks) {
+                    $.cookie(task_id, sel_tasks[task_id]['tasks'].length, { expires: 21 });
+                }
+            }
+
+            function onTaskCountChange() {
+                changed_task = $(this).attr('name');
+                new_value = $(this).attr('value');
+
+                // Если кликнули на ту же кнопку, то выходим
+                if (changed_task in sel_tasks) {
+                    if (new_value == sel_tasks[changed_task]['tasks'].length) {
+                        return
+                    }
+                }
+
+                ga('send', 'event', 'Задание', 'ИзменениеЧисла');
+
+                if (new_value == 0) {
+                    delete sel_tasks[changed_task];
+                    updatePreview();
+                    updateCookies();
+                    updateLayout();
+                    updateSelectedTasks()
+                } else {
+                    // Загружаем с сервера нужное число новых тасков (только те, что не хватало)
+                    old_value = changed_task in sel_tasks ? sel_tasks[changed_task]['tasks'].length : 0;
+                    count = new_value - old_value;
+
+                    if (count > 0) {
+                        task_to_get = {};
+                        task_to_get[changed_task] = count;
+                        get_tasks_from_server(task_to_get);
+                    } else {
+                        sel_tasks[changed_task]['tasks'].length += count;
+                        updatePreview();
+                        updateCookies();
+                        updateLayout();
+                        updateSelectedTasks()
+                    }
+                }
+
+                $('#' + changed_task + ' a').each(function() {
+                   $(this).removeClass('active notActive');
+                   $(this).addClass(($(this).attr('value') == new_value) ? 'active' : 'notActive');
+                })
+            }
+
+            function onThemeSelectClick() {
+                if ($(this).hasClass('active')) {
+                    return false;
+                }
+
+                $(this).parent().find('div').removeClass('active');
+                $(this).addClass('active');
+                updateTasks();
+                updateLayout();
+                ga('send', 'event', 'Лоция', 'Смена');
+                return false;
+
+            }
+
+            function updateSelectedTasks() {
+                $concept_id = $('#themeSelect').find(".active").attr("value");
+                concept_tasks = concepts[$concept_id].tasks;
+
+                for (i = 0; i < concept_tasks.length; i++) {
+                    task = concept_tasks[i];
+                    if (task in sel_tasks) {
+                        $('#tasks ' + '#' + task + ' .item').addClass('active')
+                    } else {
+                        $('#tasks ' + '#' + task + ' .item').removeClass('active')
+                    }
+                }
+            }
+
+            function updateTasks() {
+                // Удаляем старые элементы
+                $('#tasks .task').remove();
+                // Добавляем новые элементы
+                $concept_id = $('#themeSelect').find(".active").attr("value");
+                if ($concept_id == undefined) {
+                    return;
+                }
+
+                // Concept task codes
+                concept_tasks = concepts[$concept_id].tasks.slice();
+
+
+                for (i = 0; i < concept_tasks.length; i++) {
+                    // Task code
+                    task = concept_tasks[i];
+
+                    var $template = $('#taskTemplate'),
+                        $clone = $template
+                            .clone()
+                            .removeClass('d-none task')
+                            .removeAttr('id')
+                            .attr('name', task)
+                            .insertBefore($template);
+
+                    $clone
+                        .attr('id', task)
+                        .addClass('task')
+                        .find('.item')
+                            .text(tasks[task].title + " [" + tasks[task].example + "]")
+                            .end()
+                        .find('.btn-group a')
+                            .each(function(index){
+                                if (task in sel_tasks) {
+                                    if (index == sel_tasks[task]['tasks'].length) {
+                                        cls = 'active';
+                                    } else {
+                                        cls = 'not Active';
+                                    }
+                                } else {
+                                    if (index == 0) {
+                                        cls = 'active';
+                                    } else {
+                                        cls = 'notActive';
+                                    }
+                                }
+                                $(this).addClass(cls);
+                                $(this).click(onTaskCountChange);
+                                $(this).attr('name', task);
+                            })
+                            .end()
+                }
+                updateSelectedTasks();
+            }
+
+            function updatePreview() {
+                is_preview_empty = true;
+                for (task in sel_tasks) {
+                    if (sel_tasks[task]['tasks'].length > 0) {
+                        is_preview_empty = false;
+                        break;
+                    }
+                }
+                if (is_preview_empty) {
+                    $('#preview').addClass('d-none')
+                    return;
+                } else {
+                    $('#preview').removeClass('d-none')
+                }
+
+                // Скомпонуем массив для отображения в правильном порядке
+                indexes_list = [];
+                for (task in sel_tasks) {
+                    indexes_list.push(sel_tasks[task]['index']);
+                }
+
+                indexes_list.sort(function(a, b) {return a - b;});
+                tasks_list = [];
+                for (i = 0; i < indexes_list.length; i++) {
+                    ind = indexes_list[i];
+                    task = get_task_by_index(ind);
+                    tasks_list.push(task);
+                }
+
+                $('#preview').find('.task-item').remove();
+
+                for (i = 0; i < tasks_list.length; i++) {
+
+                    task = get_task_id_by_index(tasks_list[i]['index']);
+                    var $template = $('#taskItemTemplate'),
+                        $clone = $template.clone()
+                            .removeClass('d-none')
+                            .addClass('task-item')
+                            .removeAttr('id')
+                            .insertBefore($template)
+                            .attr('name', task);
+
+                    $clone.find('.tasks-list').append('<div></div>');
+                    $clone.find('.tasks-list div')
+                        .addClass('col-12 item-head')
+                        .append('<b></b>');
+                    $clone.find('.tasks-list b')
+                        .text((i + 1).toString() + ". " + tasks[task].title);
+                    $clone.find('.tasks-list div')
+                        .append('<button></button>');
+                    $clone.find('.tasks-list button')
+                        .text('Убрать')
+                        .attr('type', 'button')
+                        .attr('id', task)
+                        .addClass('task-remove-button')
+                        .on('click', onRemoveTaskFromPreviewClick);
+
+                    task_items = tasks_list[i]['tasks'];
+
+                    for (j = 0; j < task_items.length; j++) {
+                        $clone.find('.tasks-list').append(
+                            $("<div></div>")
+                                .addClass('col-12 item')
+                                .text((j + 1).toString() + ". " + task_items[j])
+                        );
+                    }
+                }
+            }
+        });
+    </script>
+    <style>
+        .header {
+            background: #152032
+        }
+
+        label {
+            color: #868F8F
+        }
+
+        #tasks a {
+            background-color:#70BCB6 !important;
+        }
+
+        #tasks a.active {
+            background-color:#005951 !important;
+        }
+
+        #concepts {
+            background-color: #996520
+        }
+
+        #tasks {
+            background-color: #00877B
+        }
+
+        #preview {
+            background-color: #789EC8
+        }
+
+        #concepts h1 {
+            color: #F5DEA2
+        }
+
+        #tasks h1 {
+            color: #DDFFFF
+        }
+
+        #concepts .item {
+            background-color: #C4975B
+        }
+
+        #concepts div.active {
+            background-color: #592F0F;
+            color: #EBD7C9;
+        }
+
+        #tasks .item {
+            background-color: #70BCB6
+        }
+
+        #tasks div.active {
+            background-color: #005951;
+            color: #70BCB6;
+        }
+
+        #preview {
+            color: #D0E6F4;
+        }
+
+        #btn-link {
+            background-color: #D93E00;
+            color: white;
+        }
+
+        #btn-print {
+            background-color: #A0CCE4;
+            color: white;
+        }
+
+        .center-block {
+            margin-left:auto;
+            margin-right:auto;
+            display:block;
+        }
+
+        .header a.active {
+            background-color:#996520 !important;
+        }
+
+    </style>
+    <title>Ломоносов: математика</title>
+
+    <!-- Google Analytics -->
+    <script>
+    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+    ga('create', 'UA-110461151-1', 'auto');
+    ga('send', 'pageview');
+    </script>
+    <script async src='https://www.google-analytics.com/analytics.js'></script>
+    <!-- End Google Analytics -->
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-12 header">
+                <div class="row p-3">
+                    <div class="col-1">
+                        <label>Класс</label>
+                    </div>
+                    <div class="col-auto">
+                        <div class="input-group">
+                            <div id="classes-container" class="btn-group">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div id="concepts" class="col-sm-12 col-lg-3 py-4 px-3">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <h1>Научить решать</h1>
+                    </div>
+                </div>
+                <div id="themeSelect" class="row p-4"></div>
+            </div>
+
+            <div id="tasks" class="col-sm-12 col-lg-6 py-4 px-3">
+                <div class="row">
+
+                    <div class="col-sm-12">
+                        <h1>Выберите задания и кол-во</h1>
+                    </div>
+
+                </div>
+
+                <div id="taskTemplate" class="d-none row p-4 align-items-center">
+                    <div class="col-7 item rounded"></div>
+                    <div class="col-5 number rounded">
+                        <div class="input-group">
+                            <div class="btn-group">
+                                <a value="0" class="btn btn-secondary btn-sm">0</a>
+                                <a value="1" class="btn btn-secondary btn-sm">1</a>
+                                <a value="2" class="btn btn-secondary btn-sm">2</a>
+                                <a value="3" class="btn btn-secondary btn-sm">3</a>
+                                <a value="4" class="btn btn-secondary btn-sm">4</a>
+                                <a value="5" class="btn btn-secondary btn-sm">5</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="preview" class="d-none col-sm-12 col-lg-3 py-4 px-3">
+
+                <div class="row">
+                    <div id="taskItemTemplate" class=" d-none col-12 py-2">
+                        <div class="row tasks-list"></div>
+                    </div>
+                </div>
+
+                <div id="buttons" class="row">
+                    <div class="col-12 my-1">
+                        <button id="btn-link" type="button" class="btn btn-primary btn-lg center-block">Ссылка на это задание</button>
+                    </div>
+                    <div id="copy-link" class="col d-none">
+                        <textarea id="copy-link-textarea" class=""></textarea>
+                    </div>
+                    <div class="col-12 my-1">
+                        <button id="btn-print" type="button" class="btn btn-secondary btn-lg center-block">Распечатать</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div style="position:fixed;bottom:0;left:0;width:100%;" id="alerts"></div>
+</body>
+</html>
