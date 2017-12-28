@@ -8,7 +8,6 @@ import gen.genutils.math_factors as mf
 import statistics as st
 import math
 
-
 def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij445():
     # Построй в одной системе координат графики функций:  y = x^-2, y = x^-3 и y = x^-4
     k_min = 2 * rnd.randint(1, 4)
