@@ -35,14 +35,24 @@ def f_t(n, d):
     if n == 0:
         return "0"
 
-    nt = n if n > 0 else -n
-    dt = d if d > 0 else -d
-
-    if (n < 0 and d < 0) or (n > 0 and d > 0):
-        s = ""
+    if isinstance(n, int):
+        nt = n if n > 0 else -n
     else:
-        s = "-"
+        nt = n
+    if isinstance(d, int):
+        dt = d if d > 0 else -d
+    else:
+        dt = d
 
+
+    if isinstance(n, int) and not isinstance(d, int):
+        s = "-" if n < 0 else ""
+    if not isinstance(n, int) and isinstance(d, int):
+        s = "-" if d < 0 else ""
+    if isinstance(n, int) and isinstance(d, int):
+        s = "" if (n < 0 and d < 0) or (n > 0 and d > 0) else "-"
+    if not isinstance(n, int) and not isinstance(d, int):
+        s = ""
     return s + str(nt) + ("/" + str(dt) if dt != 1 else "")
 
 def pr_t(a, b):
