@@ -34,6 +34,7 @@ def translate(name):
     name = name.replace('<', '_').lower()
     name = name.replace('?', '_').lower()
     name = name.replace('=', 'ravno').lower()
+    name = name.replace('|', '_').lower()
 
     #
     transtable = (

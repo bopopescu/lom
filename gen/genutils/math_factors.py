@@ -98,3 +98,32 @@ def s_fraction_prod(f1, f2):
     n1, d1 = f1
     n2, d2 = f2
     return s_fraction((n1 * n2, d1 * d2))
+
+# Проверяет верно ли что существует n,  такое что: a == b^n
+def if_power_of(a, b):
+    if a > b and b < 1:
+        return False
+    t = b
+    while a % t == 0:
+        if a == t:
+            return True
+        t *= b
+    return False
+
+def get_power_of(a, b):
+    if a > b and b < 1:
+        return -1
+    t = b
+    c = 1
+    while a % t == 0:
+        if a == t:
+            return c
+        t *= b
+        c += 1
+    return -1
+
+def quad_pol_by_roots(x1, x2):
+    a = x1[1] * x2[1]
+    b = -x1[0] * x2[1] - x1[1] * x2[0]
+    c = x1[0] * x2[0]
+    return a, b, c

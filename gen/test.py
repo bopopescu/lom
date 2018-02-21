@@ -1,115 +1,92 @@
 import gen.genutils.math_rnd as mrnd
 import gen.genutils.math_text as mtxt
 import gen.genutils.math_factors as mf
+import gen.genutils.math_polynomial as pol
 import random as rnd
+import math
 
 MODE_GET = 0
 MODE_PROGRAM = 1
 
 #---- SETTIGNS------
-MODE = MODE_PROGRAM
-GET_COUNT = 10
+MODE = MODE_GET
+GET_COUNT = 5
 EXAMPLES_COUNT = 3
 #---- SETTIGNS------
 
 # -----INSERTION START----------------------
 
 tasks = [
-	{'postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij445': {'tlt': 'Построй в одной системе координат графики функций'}},
-	{'kakovyi_oblast_opredelenij_i_oblast_znachenij_funktsii444': {'tlt': 'каковы область определений и область значений функции'}},
-	{'postroj_v_odnoj_sisteme_koordinat_grafiki_funktsii': {'tlt': 'построй в одной системе координат графики функции'}},
-	{'kakaya_iz_funktsii_lezhit': {'tlt': 'какая из функции быстрее'}},
-	{'vozrastaet_ili_ubyivaet_funktsiya441': {'tlt': 'возрастает или убывает функция'}},
+	{'kakie_iz_chisel_yavlyayutsya_otritstalnyimi_polozhitelnyimi_neotritsatelnyimi_i_nepolozhitelnyimi': {'tlt': 'Какие из чисел являются отрицтальными, положительными, неотрицательными и неположительными'}},
+	{'kakie_iz_chisel_nepolozhitelnyie': {'tlt': 'какие из чисел неположительные'}},
+	{'kakie_iz_chisel_neotritstalnyie': {'tlt': 'какие из чисел неотрицтальные'}},
+	{'kakie_iz_chisel_polozhitelnyie': {'tlt': 'какие из чисел положительные'}},
+	{'kakie_iz_chisel_otritsatelnyie': {'tlt': 'какие из чисел отрицательные'}},
 ]
 
-def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij445():
-    # Построй в одной системе координат графики функций:  y = x^-2, y = x^-3 и y = x^-4
-    k_min = 2 * rnd.randint(1, 4)
+def kakie_iz_chisel_yavlyayutsya_otritstalnyimi_polozhitelnyimi_neotritsatelnyimi_i_nepolozhitelnyimi():
+# Какие из чисел являются отрицтальными, положительными, неотрицательными и неположительными: 3; -6; -2и1/3; 4,7; 9/16; 0; -5,2; 10,14; 5/8
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
 
-    return "y=x^-" + str(k_min) + ", y=x^-" + str(k_min + 1) + " и y=x^-" + str(k_min + 2), ''
+    return " ".join([x[0] for x in res]), \
+        "положительные: " + " ".join([x[0] for x in res if 'положительные' in x[1]]) + "; " + \
+        "отрицательные: " + " ".join([x[0] for x in res if 'отрицательные' in x[1]]) + "; " + \
+        "неположительные: " + " ".join([x[0] for x in res if 'неположительные' in x[1]]) + "; " + \
+        "неотрицательные: " + " ".join([x[0] for x in res if 'неотрицательные' in x[1]]) + "; "
 
-def kakovyi_oblast_opredelenij_i_oblast_znachenij_funktsii444():
-    # каковы область определений и область значений функции y = x^-3 (n=[0, 10])
-    k = rnd.randint(2, 9)
-    return "какова область определения и область значений функции y=x^-" + str(k), \
-           "область определения: вся числовая ось, область значений: " + (
-           "любое число" if k % 2 != 0 else "[0, +бесконечность]")
 
-def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsii():
-    # построй в одной системе координат графики функции y = x^-2 и y = x^-4
-    if rnd.randint(0, 1) == 0:
-        k1 = 2 * rnd.randint(1, 4)
-        k2 = 2 * mrnd.rnd_w(1, 4, [k1])
-    else:
-        k1 = 2 * rnd.randint(1, 4) + 1
-        k2 = 2 * mrnd.rnd_w(1, 4, [k1]) + 1
+def kakie_iz_chisel_nepolozhitelnyie():
+# какие из чисел неположительные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
 
-    return "построй в одной системе координат графики функций: y=x^-" + str(k1) + " и y=x^-" + str(k2), ''
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'неположительные' in x[1]])
 
-def kakaya_iz_funktsii_lezhit():
-    # какая из функции быстрее: убывает|возрастает на отрезке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность) y = x^-2 или x^-4
-    uc = rnd.randint(0, 3)
-    uv = rnd.randint(0, 1)
-    k1 = rnd.randint(2, 9)
-    k2 = mrnd.rnd_w(2, 9, [k1])
 
-    if uc == 0:
-        ucs = "(-бесконечность, -1)"
-    if uc == 1:
-        ucs = "(-1, 0)"
-    if uc == 2:
-        ucs = "(0, 1)"
-    if uc == 3:
-        ucs = "(1, +бесконечность)"
+def kakie_iz_chisel_neotritstalnyie():
+# какие из чисел неотрицтальные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
 
-    uvs = ("выше" if uv == 0 else "ниже")
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'неотрицательные' in x[1]])
 
-    f1 = "y=x^-" + str(k1)
-    f2 = "y=x^-" + str(k2)
 
-    if uc == 0:
-        if uv == 0:
-            answer = f1 if (k1 % 2 == 0 and k2 % 2 != 0) or ((k1 % 2 == 0 and k2 % 2 == 0) and k1 < k2) else f2
-        if uv == 1:
-            answer = f1 if (k1 % 2 != 0 and k2 % 2 == 0) or ((k1 % 2 != 0 and k2 % 2 != 0) and k1 < k2) else f2
-    if uc == 1:
-        if uv == 0:
-            answer = f1 if (k1 % 2 == 0 and k2 % 2 != 0) or ((k1 % 2 == 0 and k2 % 2 == 0) and k1 > k2) else f2
-        if uv == 1:
-            answer = f1 if (k1 % 2 != 0 and k2 % 2 == 0) or ((k1 % 2 != 0 and k2 % 2 != 0) and k1 > k2) else f2
-    if uc == 2:
-        if uv == 0:
-            answer = f1 if k1 > k2 else f2
-        if uv == 1:
-            answer = f1 if k1 < k2 else f2
-    if uc == 3:
-        if uv == 0:
-            answer = f1 if k1 < k2 else f2
-        if uv == 1:
-            answer = f1 if k1 > k2 else f2
 
-    return uvs + " на отрезке " + ucs + ": " + f1 + " или " + f2, answer
+def kakie_iz_chisel_polozhitelnyie():
+# какие из чисел положительные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
 
-def vozrastaet_ili_ubyivaet_funktsiya441():
-# y = x^-3 на участке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность)
-    uc = rnd.randint(0, 3)
-    k = rnd.randint(2, 9)
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'положительные' in x[1]])
 
-    if uc == 0:
-        ucs = "(-бесконечность, -1)"
-    if uc == 1:
-        ucs = "(-1, 0)"
-    if uc == 2:
-        ucs = "(0, 1)"
-    if uc == 3:
-        ucs = "(1, +бесконечность)"
 
-    if k % 2 == 0:
-        answer = "возрастает " if uc not in [2, 3] else "убывает"
-    else:
-        answer = "убывает"
+def kakie_iz_chisel_otritsatelnyie():
+# какие из чисел отрицтальные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
 
-    return "y=x^-" + str(k) + " на участке " + ucs, answer
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'отрицательные' in x[1]])
 
 # -----INSERTION END-----------------------
 

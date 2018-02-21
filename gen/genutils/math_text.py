@@ -96,7 +96,7 @@ def fc(a, is_first = True):
     return str(a)
 
 def point(x, y):
-    return "(" + str(x) + ", " + str(y) + ")"
+    return "(" + str(x) + "; " + str(y) + ")"
 
 def lin(k, b):
     if k == 0:
@@ -104,3 +104,26 @@ def lin(k, b):
     if b == 0:
         return "y=" + fc(k) + "x"
     return "y=" + fc(k) + "x" + ("+" + str(b) if b > 0 else str(b))
+
+def mp(symb, p):
+    text = ""
+    for i in range(0, p):
+        text += ("" if i == 0 else "*") + symb
+    return text
+
+def get_k(symb, p):
+    int_p = p // 2
+    k_p = p % 2
+    int_p_str = symb + ("^" + str(int_p) if int_p > 1 else "") if int_p > 0 else ""
+    k_p_str = k_t(symb) if k_p == 1 else ""
+    return int_p_str + k_p_str
+
+def mod(exp):
+    return "|" + str(exp) + "|"
+
+def s(a):
+    if a == 0:
+        return ""
+    else:
+        return ("+" if a > 0 else "") + str(a)
+

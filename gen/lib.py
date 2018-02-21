@@ -25,12 +25,12 @@ def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsii():
     # построй в одной системе координат графики функции y = x^-2 и y = x^-4
     if rnd.randint(0, 1) == 0:
         k1 = 2 * rnd.randint(1, 4)
-        k2 = 2 * mrnd.rnd_w(1, 4, [k1])
+        k2 = 2 * mrnd.rnd_w(1, 4, [int(k1/2)])
     else:
         k1 = 2 * rnd.randint(1, 4) + 1
-        k2 = 2 * mrnd.rnd_w(1, 4, [k1]) + 1
+        k2 = 2 * mrnd.rnd_w(1, 4, [int((k1-1)/2)]) + 1
 
-    return "построй в одной системе координат графики функций: y=x^-" + str(k1) + " и y=x^-" + str(k2), ''
+    return "y=x^-" + str(k1) + " и y=x^-" + str(k2), ''
 
 def kakaya_iz_funktsii_lezhit():
     # какая из функции быстрее: убывает|возрастает на отрезке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность) y = x^-2 или x^-4
