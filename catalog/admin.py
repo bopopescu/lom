@@ -1,10 +1,15 @@
 from django.contrib import admin
+from django.contrib.admin.helpers import ActionForm
+from django import forms
 
 from .models import Concept
+from .models import TaskInConcept
 from .models import Tag
 from .models import Task
 from .models import Grade
 from .models import Student
+from .models import TaskText
+from .models import TaskSessionGroup
 from .models import Session
 
 
@@ -127,30 +132,83 @@ def translate(name):
     return name
 
 
+class IsTaskInAnyConceptFilter(admin.SimpleListFilter):
+    title = ('is in any concept')
+    parameter_name = 'isinanyconcept'
+
+    def lookups(self, request, model_admin):
+        return (
+            ('yes', 'да'),
+            ('no', 'нет'),
+        )
+
+    def queryset(self, request, queryset):
+        rids = [x.task.id for x in TaskInConcept.objects.all()]
+        if self.value() == 'yes':
+            return queryset.filter(id__in=rids)
+        else:
+            return queryset.exclude(id__in=rids)
+
+
 admin.site.register(Tag)
+
+class AddToConceptActionForm(ActionForm):
+    concept_id = forms.IntegerField()
 
 
 @admin.register(Task)
 class TaskAdmin(admin.ModelAdmin):
+    action_form = AddToConceptActionForm
+
     fields = ('tlt', 'tags', 'example')
     filter_horizontal = ('tags',)
+    list_display = ('id', 'code', 'tlt', 'example', 'is_in_any_concept', )
+    list_filter = ('tags', IsTaskInAnyConceptFilter)
+    ordering = ('id',)
+    actions = ('add_to_concept', )
 
-    list_filter = ('tags',)
+    def add_to_concept(self, request, queryset):
+        c_id = request.POST['concept_id']
+        c_id = int(c_id)
+        for t in queryset:
+            c = Concept.objects.get(id=c_id)
+
+            qs = TaskInConcept.objects.filter(concept=c)
+            if not qs.exists():
+                o = 1
+            else:
+                o = max([x.order for x in qs]) + 1
+
+            tic = TaskInConcept(concept=c, task=t, order=o)
+            tic.save()
+
+    add_to_concept.short_description = "Add to concept"
+
+    def is_in_any_concept(self, obj):
+        return Concept.objects.filter(tasks__id__contains=obj.id).exists()
 
     def save_model(self, request, obj, form, change):
         obj.code = translate(obj.tlt)
         super(TaskAdmin, self).save_model(request, obj, form, change)
 
 
+class ConceptInGradeInline(admin.TabularInline):
+    model = Grade.concepts.through
+    ordering = ("order",)
+
+
 @admin.register(Grade)
 class GradeAdmin(admin.ModelAdmin):
-    filter_horizontal = ('concepts'),
-    fields = ('tlt', 'concepts')
+#    filter_horizontal = ('concepts'),
+    fields = ('tlt', )
     list_display = ('tlt',)
+    exclude = ('concepts', )
+    inlines = [ConceptInGradeInline,]
 
     def save_model(self, request, obj, form, change):
         obj.code = translate(obj.tlt)
         super(GradeAdmin, self).save_model(request, obj, form, change)
+
 
 class TaskInConceptInline(admin.TabularInline):
     model = Concept.tasks.through
@@ -168,19 +226,23 @@ class ConceptAdmin(admin.ModelAdmin):
         obj.code = translate(obj.tlt)
         super(ConceptAdmin, self).save_model(request, obj, form, change)
 
-
-class TaskInSessionInline(admin.TabularInline):
-    model = Session.tasks.through
-    ordering = ("order",)
-
-
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     pass
 
 
+@admin.register(TaskText)
+class TaskTextAdmin(admin.ModelAdmin):
+    ordering = ("order",)
+
+
+class TaskSessionGroupInLine(admin.TabularInline):
+    model = TaskSessionGroup
+    extra = 0
+
+
 @admin.register(Session)
 class SessionAdmin(admin.ModelAdmin):
-    inlines = [TaskInSessionInline,]
-    exclude = ('tasks', )
+    list_display = ("student", "date")
+    inlines = [TaskSessionGroupInLine,]
 

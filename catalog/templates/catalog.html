@@ -142,144 +142,111 @@
         var tasks = JSON.parse('{{ tasks|safe }}');
         var grades = JSON.parse('{{ grades|safe }}');
 
-        c = '{{ concept_id|safe }}'
-        if (c != '') {
-            var url_concept = JSON.parse(c);
-        }
-
-        c = '{{ tasks_group|safe }}'
-        if (c != '') {
-            var url_tasks_group = JSON.parse(c);
-        }
-
         c = '{{ session|safe }}'
         if (c != '') {
             var session = JSON.parse(c);
         }
 
-        c = '{{ user|safe }}'
-        if (c != '') {
-            var user = JSON.parse(c);
-        }
+        sel_tasks = [];
 
-        sel_tasks = {};
-
-        function get_index() {
-            index = 0;
-            for (task in sel_tasks) {
-                if (sel_tasks[task]['index'] > index) {
-                    index = sel_tasks[task]['index'];
+        function get_index_in_sel_tasks(task_code) {
+            res = -1;
+            for (kk = 0; kk < sel_tasks.length; kk++) {
+                if (sel_tasks[kk]['task_code'] == task_code) {
+                    res = kk;
+                    break;
                 }
             }
-            return index + 1;
+            return res;
         }
 
-        function get_task_by_index(index) {
-            for (task in sel_tasks) {
-                if (sel_tasks[task]['index'] == index) {
-                    return sel_tasks[task];
-                }
+        function remove_from_sel_tasks(task_code) {
+            index_to_remove = get_index_in_sel_tasks(task_code);
+            if (index_to_remove > -1) {
+                sel_tasks.splice(index_to_remove, 1);
             }
-            return null;
         }
-
-        function get_task_id_by_index(index) {
-            for (task in sel_tasks) {
-                if (sel_tasks[task]['index'] == index) {
-                    return task;
-                }
-            }
-            return "";
-        }
-
-        function get_current_link() {
-            // Извлекаем словарь, готовый для формирования параметроы ссылки из него
-            url_params_dict = {};
-            for (task_id in sel_tasks) {
-                count = sel_tasks[task_id]['tasks'].length;
-                url_params_dict[task_id] = count;
-            }
-
-            params_str = $.param(url_params_dict);
-            return window.location.hostname + '/work/' + "?" + params_str;
-        }
-
     </script>
     <script type="text/javascript">
             $(document).ready(function() {
-            // Заполняем лоции для нпереданного класса или класса по-умолчанию
-            default_grade = 'sedmoj';
-            grade = default_grade;
-            if (url_concept != undefined) {
-                for (g in grades) {
-                    if (grades[g]['concepts'].indexOf(url_concept) >= 0) {
-                        grade = g;
-                        break;
-                    }
+
+                // Текущий ученик
+                student = {'login': "", 'name': ""};
+
+                // Заполняем лоции для переданного класса или класса по-умолчанию
+                default_grade = 'sedmoj';
+                if (grades[default_grade] !== undefined){
+                    grade = default_grade;
+                } else {
+                    grade = grades.keys()[0];
                 }
-            } else {
                 grd = $.cookie('grade');
                 if (grd != null) {
                     grade = grd;
                 }
-            }
 
-            // Если запрашивается ранее набранная группа тасков, то...
-            if (url_tasks_group != undefined) {
-                sel_tasks = {};
-                get_tasks_from_server(url_tasks_group);
-            // Если были сохраненные в куках таски, то....
-            } else {
-                tasks_in_cookies = getTasksInCookies();
-
-                if (Object.keys(tasks_in_cookies).length > 0) {
-                    sel_tasks = {};
-                    get_tasks_from_server(tasks_in_cookies);
+                // Если загружаем не сессию
+                if (session === undefined) {
+                    // Если были сохраненные в куках таски, то....
+                    tasks_in_cookies = getTasksInCookies();
+                    if (Object.keys(tasks_in_cookies).length > 0) {
+                        sel_tasks = [];
+                        get_tasks_from_server(tasks_in_cookies);
+                    } else {
+                        updateLayout();
+                    }
                 } else {
+                    sel_tasks = session['groups'];
                     updateLayout();
+                    updatePreview();
                 }
-            }
 
-            // Кнопки классов
-            for(var g in grades) {
-                classStr = 'btn grade-button btn-secondary btn-sm rounded ';
-                if (g == grade) {
-                    classStr += 'active'
+                // Кнопки классов
+                for(var g in grades) {
+                    classStr = 'btn grade-button btn-secondary btn-sm rounded ';
+                    if (g == grade) {
+                        classStr += 'active'
+                    } else {
+                        classStr += 'notActive'
+                    }
+                    $('<a></a>')
+                        .attr('type', 'button')
+                        .attr('name', g)
+                        .addClass(classStr)
+                        .text(grades[g].title)
+                        .appendTo('#classes-container');
+                }
+
+                updateConcepts(grade);
+
+                $('#btn-viewsession').on('click', onViewSessionClick);
+
+                // Обновляем отображение ученика
+                if (session === undefined) {
+                    s = $.cookie('student');
+                    if (s != null) {
+                        get_next_student_from_server(s);
+                    } else {
+                        updateStudent();
+                    }
                 } else {
-                    classStr += 'notActive'
+                    student = {'login': session['student_login'], 'name': session['student_name']};
+                    updateStudent();
                 }
-                $('<a></a>')
-                    .attr('type', 'button')
-                    .attr('name', g)
-                    .addClass(classStr)
-                    .text(grades[g].title)
-                    .appendTo('#classes-container');
-            }
+                $('#student-info').on('click', onStudentInfoClick);
 
-            updateThemeSelect(grade);
-
-            url_concept = undefined;
-
-            $('#btn-link').on('click', onLinkCopyClick);
-            $('#btn-print').on('click', onPrintClick);
-
-
-
-            // Обновляем таски выбранной лоции
-            updateTasks();
-
-            $('.grade-button').on('click', function(){
-                if ($(this).hasClass('active') == false) {
-                    $('.grade-button').removeClass('active');
-                    $('.grade-button').addClass('notActive');
-                    $(this).addClass('active');
-                    grade = $(this).attr('name');
-                    updateThemeSelect(grade);
-                    $.cookie('grade', grade, { expires: 21 });
-                    updateLayout()
-                    updateTasks();
-                    ga('send', 'event', 'Класс', 'Смена');
-                }
+                $('.grade-button').on('click', function(){
+                    if ($(this).hasClass('active') == false) {
+                        $('.grade-button').removeClass('active');
+                        $('.grade-button').addClass('notActive');
+                        $(this).addClass('active');
+                        grade = $(this).attr('name');
+                        updateConcepts(grade);
+                        $.cookie('grade', grade, { expires: 21 });
+                        updateLayout()
+                        updateTasks();
+                        ga('send', 'event', 'Класс', 'Смена');
+                    }
             });
 
             function getTasksInCookies() {
@@ -292,46 +259,37 @@
                 return res;
             }
 
-            function onPrintClick() {
-                $preview = $('#preview').clone();
-                $preview.find('.task-remove-button').remove();
-                $preview.find('#buttons').remove();
-                $preview.find('.task-item').css('padding-bottom', '15px');
+            function onViewSessionClick() {
+                // Добавляем в базу новую сессию для текущего ученика
+                $.ajax({
+                    type: "POST",
+                    url: '/ajax/addsession/',
+                    data: JSON.stringify({'tasks':sel_tasks, 'student': student['login']}),
+                    dataType: 'json',
+                    success: function (response) {
+                        session_id = response['session'];
+                        url = document.location.protocol + '//' + document.location.host + '/viewsession/' + session_id.toString();
+                        window.open(url,'_blank');
+                    }
+                });
 
-                preview_html = $preview.html();
-                base_html = $('#work-template').text();
-
-                pos = base_html.indexOf('</body>');
-                html = base_html.slice(0, pos) + preview_html + base_html.slice(pos);
-                var newWindow = window.open("");
-                newWindow.document.write(html);
-
-                ga('send', 'event', 'Подборка', 'Распечатать');
-            }
-
-            function onLinkCopyClick() {
-                link = get_current_link();
-                $('#copy-link')
-                    .removeClass('d-none');
-                $('#copy-link-textarea')
-                    .text(link)
-                    .width('100%')
-                    .on('blur', onCopyLinkTextAreaLeave)
-                    .focus()
-                    .select();
-                document.execCommand('copy');
+                // Сбрасываем выбранного ученика (для него все сделано)
+                student['login'] = "";
+                student['name'] = "";
+                $.removeCookie('student');
+                updateStudent();
 
                 ga('send', 'event', 'Подборка', 'ПолучитьСсылку');
             }
 
-            function onCopyLinkTextAreaLeave() {
-                $('#copy-link')
-                    .addClass('d-none');
+            function onStudentInfoClick() {
+                get_next_student_from_server();
             }
 
+
             function onRemoveTaskFromPreviewClick() {
-                task_id = event.target.id;
-                delete sel_tasks[task_id];
+                remove_from_sel_tasks(event.target.id)
+
                 updateLayout();
                 updateTasks();
                 updatePreview();
@@ -342,21 +300,11 @@
             function updateLayout() {
 
                 concept_selected = true;
-                if (url_concept == undefined) {
-                    if ($('#themeSelect').find(".active").length == 0) {
-                        concept_selected = false;
-                    }
+                if ($('#themeSelect').find(".active").length == 0) {
+                    concept_selected = false;
                 }
 
-                task_selected = false;
-
-                for (task in sel_tasks) {
-
-                    if (sel_tasks[task]['tasks'].length > 0) {
-                        task_selected = true;
-                        break;
-                    }
-                }
+                task_selected = sel_tasks.length > 0;
 
                 if (concept_selected == true) {
                     $('#tasks').removeClass('d-none');
@@ -380,6 +328,9 @@
                     $('#concepts')
                         .removeClass('col-lg-3 col-lg-12')
                         .addClass('col-lg-6');
+                    $('#tasks')
+                        .removeClass('col-lg-5 col-lg-12')
+                        .addClass('col-lg-6');
                 }
 
                 if (task_selected == true && concept_selected == true) {
@@ -388,7 +339,10 @@
                         .addClass('col-lg-3');
                     $('#preview')
                         .removeClass('col-lg-6 col-lg-12')
-                        .addClass('col-lg-3');
+                        .addClass('col-lg-4');
+                    $('#tasks')
+                        .removeClass('col-lg-6 col-lg-12')
+                        .addClass('col-lg-5');
                 }
 
                 if (task_selected == true && concept_selected == false) {
@@ -396,28 +350,25 @@
                         .removeClass('col-lg-3 col-lg-12')
                         .addClass('col-lg-6');
                     $('#preview')
-                        .removeClass('col-lg-3 col-lg-12')
+                        .removeClass('col-lg-4 col-lg-12')
                         .addClass('col-lg-6');
                 }
             }
 
-            function updateThemeSelect(grd) {
+            function updateConcepts(grd) {
                 $('#themeSelect').find('div').remove();
                 grade_concepts = grades[grd].concepts;
                 classStr = 'col-12 p-2 mb-1 item rounded ';
                 for (i = 0; i < grade_concepts.length; i++) {
                     concept = grade_concepts[i];
-
-                    if (concept == url_concept) {
-                        cls = classStr + ' active';
-                    } else {
-                        cls = classStr;
-                    }
+                    cls = classStr;
+                    c = concepts[concept].title;
+                    txt = c.charAt(0).toUpperCase() + c.slice(1);
                     $('#themeSelect')
                         .append($("<div></div>")
                             .attr('value', concept)
                             .addClass(cls)
-                            .text(concepts[concept].title))
+                            .text(txt))
                             .find('div')
                                 .click(onThemeSelectClick);
                 }
@@ -429,18 +380,29 @@
                     data: tasks_to_obtain,
                     dataType: 'json',
                     success: function (data) {
-
-                        for (task_loaded in data['tasks']) {
-                            tasksArray = data['tasks'][task_loaded];
-                            task_info = {};
-                            task_info['tasks'] = (task_loaded in sel_tasks ? sel_tasks[task_loaded]['tasks'] : []).concat(tasksArray);
-                            task_info['index'] = get_index();
-                            sel_tasks[task_loaded] = task_info;
-                        }
+                        sel_tasks = sel_tasks.concat(data['tasks']);
                         updateLayout();
                         updatePreview();
                         updateCookies();
                         updateSelectedTasks()
+                    }
+                });
+            }
+
+            function get_next_student_from_server(st = "") {
+                $.ajax({
+                    url: 'ajax/nextstudent/',
+                    data: {'student': st},
+                    dataType: 'json',
+                    success: function (data) {
+                        student['login'] = data['login'];
+                        student['name'] = data['name'];
+                        updateStudent();
+                        if (student['login'].length > 0) {
+                            $.cookie('student', student['login'] , { expires: 1 });
+                        } else {
+                            $.removeCookie('student');
+                        }
                     }
                 });
             }
@@ -452,52 +414,46 @@
                         $.removeCookie(c);
                     }
                 }
-                for (task_id in sel_tasks) {
-                    $.cookie(task_id, sel_tasks[task_id]['tasks'].length, { expires: 21 });
+                for (i = 0; i < sel_tasks.length; i++) {
+                    $.cookie(sel_tasks[i]['task_code'], sel_tasks[i]['texts'].length, { expires: 21 });
                 }
             }
 
             function onTaskCountChange() {
                 changed_task = $(this).attr('name');
+
                 new_value = $(this).attr('value');
 
                 // Если кликнули на ту же кнопку, то выходим
-                if (changed_task in sel_tasks) {
-                    if (new_value == sel_tasks[changed_task]['tasks'].length) {
-                        return
+                task_index = get_index_in_sel_tasks(changed_task);
+                if (task_index >= 0) {
+                    if (new_value == sel_tasks[task_index]['texts'].length) {
+                        return false;
                     }
                 }
 
-                ga('send', 'event', 'Задание', 'ИзменениеЧисла');
-
+                if (task_index != -1) {
+                    sel_tasks.splice(task_index, 1);
+                }
                 if (new_value == 0) {
-                    delete sel_tasks[changed_task];
                     updatePreview();
                     updateCookies();
                     updateLayout();
                     updateSelectedTasks()
                 } else {
-                    // Загружаем с сервера нужное число новых тасков (только те, что не хватало)
-                    old_value = changed_task in sel_tasks ? sel_tasks[changed_task]['tasks'].length : 0;
-                    count = new_value - old_value;
-
-                    if (count > 0) {
-                        task_to_get = {};
-                        task_to_get[changed_task] = count;
-                        get_tasks_from_server(task_to_get);
-                    } else {
-                        sel_tasks[changed_task]['tasks'].length += count;
-                        updatePreview();
-                        updateCookies();
-                        updateLayout();
-                        updateSelectedTasks()
-                    }
+                    task_to_get = {};
+                    task_to_get[changed_task] = new_value;
+                    get_tasks_from_server(task_to_get);
                 }
 
+                // Обновляем отображение активности кнопок числа заданий
                 $('#' + changed_task + ' a').each(function() {
                    $(this).removeClass('active notActive');
                    $(this).addClass(($(this).attr('value') == new_value) ? 'active' : 'notActive');
                 })
+
+                ga('send', 'event', 'Задание', 'ИзменениеЧисла');
+
             }
 
             function onThemeSelectClick() {
@@ -511,7 +467,6 @@
                 updateLayout();
                 ga('send', 'event', 'Лоция', 'Смена');
                 return false;
-
             }
 
             function updateSelectedTasks() {
@@ -520,26 +475,41 @@
 
                 for (i = 0; i < concept_tasks.length; i++) {
                     task = concept_tasks[i];
-                    if (task in sel_tasks) {
+                    task_index = get_index_in_sel_tasks(task);
+
+                    // Подсвечиваем таски, которые есть в sel_tasks
+                    if (task_index >= 0) {
                         $('#tasks ' + '#' + task + ' .item').addClass('active')
                     } else {
                         $('#tasks ' + '#' + task + ' .item').removeClass('active')
-                    }
+                    };
+
+                    // Подсвечиваем нужную кнопку числа тасков
+                    if (task_index >= 0) {
+                        tasks_count = sel_tasks[task_index]['texts'].length;
+                    } else {
+                        tasks_count = 0;
+                    };
+                    $('#tasks ' + '#' + task + ' .btn-group a').each(function(index){
+                        $(this).removeClass("active notActive");
+                        cls = (index == tasks_count) ? "active" : "notActive";
+                        $(this).addClass(cls);
+                    });
                 }
             }
 
             function updateTasks() {
                 // Удаляем старые элементы
                 $('#tasks .task').remove();
+
                 // Добавляем новые элементы
                 $concept_id = $('#themeSelect').find(".active").attr("value");
+
                 if ($concept_id == undefined) {
                     return;
                 }
-
                 // Concept task codes
                 concept_tasks = concepts[$concept_id].tasks.slice();
-
 
                 for (i = 0; i < concept_tasks.length; i++) {
                     // Task code
@@ -553,70 +523,31 @@
                             .attr('name', task)
                             .insertBefore($template);
 
+                    tlt = tasks[task].title
+                    tlt = tlt.charAt(0).toUpperCase() + tlt.slice(1);
+
                     $clone
                         .attr('id', task)
                         .addClass('task')
                         .find('.item')
-                            .text(tasks[task].title + " [" + tasks[task].example + "]")
+                            .text(tlt + " " + tasks[task].example)
                             .end()
                         .find('.btn-group a')
                             .each(function(index){
-                                if (task in sel_tasks) {
-                                    if (index == sel_tasks[task]['tasks'].length) {
-                                        cls = 'active';
-                                    } else {
-                                        cls = 'not Active';
-                                    }
-                                } else {
-                                    if (index == 0) {
-                                        cls = 'active';
-                                    } else {
-                                        cls = 'notActive';
-                                    }
-                                }
-                                $(this).addClass(cls);
                                 $(this).click(onTaskCountChange);
                                 $(this).attr('name', task);
                             })
                             .end()
                 }
+
                 updateSelectedTasks();
             }
 
             function updatePreview() {
-                is_preview_empty = true;
-                for (task in sel_tasks) {
-                    if (sel_tasks[task]['tasks'].length > 0) {
-                        is_preview_empty = false;
-                        break;
-                    }
-                }
-                if (is_preview_empty) {
-                    $('#preview').addClass('d-none')
-                    return;
-                } else {
-                    $('#preview').removeClass('d-none')
-                }
-
-                // Скомпонуем массив для отображения в правильном порядке
-                indexes_list = [];
-                for (task in sel_tasks) {
-                    indexes_list.push(sel_tasks[task]['index']);
-                }
-
-                indexes_list.sort(function(a, b) {return a - b;});
-                tasks_list = [];
-                for (i = 0; i < indexes_list.length; i++) {
-                    ind = indexes_list[i];
-                    task = get_task_by_index(ind);
-                    tasks_list.push(task);
-                }
-
                 $('#preview').find('.task-item').remove();
 
-                for (i = 0; i < tasks_list.length; i++) {
-
-                    task = get_task_id_by_index(tasks_list[i]['index']);
+                for (i = 0; i < sel_tasks.length; i++) {
+                    task = sel_tasks[i]['task_code'];
                     var $template = $('#taskItemTemplate'),
                         $clone = $template.clone()
                             .removeClass('d-none')
@@ -625,31 +556,29 @@
                             .insertBefore($template)
                             .attr('name', task);
 
-                    $clone.find('.tasks-list').append('<div></div>');
-                    $clone.find('.tasks-list div')
-                        .addClass('col-12 item-head')
-                        .append('<b></b>');
                     $clone.find('.tasks-list b')
-                        .text((i + 1).toString() + ". " + tasks[task].title);
-                    $clone.find('.tasks-list div')
-                        .append('<button></button>');
+                        .text((i + 1).toString() + ". " + sel_tasks[i]['tlt']);
                     $clone.find('.tasks-list button')
-                        .text('Убрать')
-                        .attr('type', 'button')
                         .attr('id', task)
-                        .addClass('task-remove-button')
                         .on('click', onRemoveTaskFromPreviewClick);
 
-                    task_items = tasks_list[i]['tasks'];
+                    task_items = sel_tasks[i]['texts'];
 
                     for (j = 0; j < task_items.length; j++) {
                         $clone.find('.tasks-list').append(
-                            $("<div></div>")
-                                .addClass('col-12 item')
-                                .text((j + 1).toString() + ". " + task_items[j])
+                            "<div class='col-12 item'><span>" + (j + 1).toString() + ". " + task_items[j][0] + ".</span><i>" + " Ответ: " + task_items[j][1] + "</i></div>"
                         );
                     }
                 }
+            }
+
+            function updateStudent(){
+                if (student['name'].length > 0) {
+                    s = student['name'];
+                } else {
+                    s = "не выбран";
+                }
+                $('#student-info').text(s);
             }
         });
     </script>
@@ -712,13 +641,8 @@
             color: #D0E6F4;
         }
 
-        #btn-link {
+        #btn-viewsession {
             background-color: #D93E00;
-            color: white;
-        }
-
-        #btn-print {
-            background-color: #A0CCE4;
             color: white;
         }
 
@@ -730,6 +654,14 @@
 
         .header a.active {
             background-color:#996520 !important;
+        }
+
+        #student-info {
+            color: #D0E6F4;
+        }
+
+        #student-info:hover {
+            font-weight: bold;
         }
 
     </style>
@@ -761,6 +693,9 @@
                             </div>
                         </div>
                     </div>
+                    <div class="col-auto p-1">
+                        <label id="student-info">не выбран</label>
+                    </div>
                 </div>
             </div>
         </div>
@@ -768,17 +703,17 @@
             <div id="concepts" class="col-sm-12 col-lg-3 py-4 px-3">
                 <div class="row">
                     <div class="col-sm-12">
-                        <h1>Научить решать</h1>
+                        <h1>Темы</h1>
                     </div>
                 </div>
                 <div id="themeSelect" class="row p-4"></div>
             </div>
 
-            <div id="tasks" class="col-sm-12 col-lg-6 py-4 px-3">
+            <div id="tasks" class="col-sm-12 col-lg-5 py-4 px-3">
                 <div class="row">
 
                     <div class="col-sm-12">
-                        <h1>Выберите задания и кол-во</h1>
+                        <h1>Выберите задания</h1>
                     </div>
 
                 </div>
@@ -801,23 +736,22 @@
 
             </div>
 
-            <div id="preview" class="d-none col-sm-12 col-lg-3 py-4 px-3">
+            <div id="preview" class="d-none col-sm-12 col-lg-4 py-4 px-3">
 
                 <div class="row">
                     <div id="taskItemTemplate" class=" d-none col-12 py-2">
-                        <div class="row tasks-list"></div>
+                        <div class="row tasks-list">
+                            <div class="col-12 item-head">
+                                <b></b>
+                                <button class="task-remove-button" type="">Убрать</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <div id="buttons" class="row">
                     <div class="col-12 my-1">
-                        <button id="btn-link" type="button" class="btn btn-primary btn-lg center-block">Ссылка на это задание</button>
-                    </div>
-                    <div id="copy-link" class="col d-none">
-                        <textarea id="copy-link-textarea" class=""></textarea>
-                    </div>
-                    <div class="col-12 my-1">
-                        <button id="btn-print" type="button" class="btn btn-secondary btn-lg center-block">Распечатать</button>
+                        <button id="btn-viewsession" type="button" class="btn btn-primary btn-lg center-block">Ссылка на это задание</button>
                     </div>
                 </div>
 

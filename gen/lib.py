@@ -5,8 +5,3364 @@ import gen.genutils.math_numeric_expressions as ne
 import gen.genutils.math_rnd as mrnd
 import gen.genutils.math_text as mtxt
 import gen.genutils.math_factors as mf
+import gen.genutils.math_trig as tr
 import statistics as st
 import math
+
+def zashtrihujte_vse_uglyi_a_dlya_kotoryih_verno():
+# Заштрихуйте все углы альфа, для которых верно sin|cos(альфа) >|< k(2)/2|1/3
+    c = rnd.randint(0, 1)
+    vs = ["-1", "-k(3)/2", "-k(2)/2", "-1/2", "-1/3", "-1/4", "-1/5", "0", "1/2", "1/5", "1/4", "1/3", "k(2)/2", "k(3)/2", "1"]
+    v = rnd.choice(vs)
+    s = rnd.randint(0, 1)
+
+    return ("cos" if c == 0 else "sin") + mtxt._("a") + (">" if s == 0 else "<") + v, 'график'
+
+
+def vyirazite_ugol_a_cherez():
+# Выразите угол a через: arccos|arcsin , если cos|sin(a)=m (m>0|m<0) и -pi/2<=a<=pi/2 // сделать разные интервалы
+    ac = rnd.randint(0, 1)
+    if rnd.randint(0, 3) != 0:
+        c = 1-ac
+    else:
+        c = ac
+    s = rnd.randint(0, 1)
+
+    if ac == c:
+        answer = ("arccos" if ac == 0 else "arcsin") + "(m)"
+    else:
+        if c == 0:
+            answer = "pi - arcsin(1-m^2)" if s == 1 else "arcsin(1-m^2)"
+        else:
+            answer = "-arccos(1-m^2)" if s == 1 else "arccos(1-m^2)"
+
+    return ("arccos" if ac == 0 else "arcsin") + ", если " + ("cos" if c == 0 else "sin") + "(a)=m " +\
+           "(m" + (">" if s == 0 else "<") + "0) и " + ("-pi/2<=a<=pi/2" if c == 1 else "0<=a<=pi"),\
+           answer
+
+def vyichislite653():
+# Вычислите sin|cos(arcsin|arccos) k(2)/2
+    c = rnd.randint(0, 1)
+    ac = rnd.randint(0, 1)
+
+    vs = ["-1", "-k(3)/2", "-k(2)/2", "-1/2", "0", "1/2", "k(2)/2", "k(3)/2", "1"]
+    v = rnd.choice(vs)
+
+    def aac(c, ca, a):
+        if c == ca:
+            return a
+        else:
+            return {
+                "-1": "0",
+                "-k(3)/2": "1/2",
+                "-k(2)/2": "k(2)/2",
+                "-1/2": "k(3)/2",
+                "0": "1",
+                "1/2": "k(3)/2",
+                "k(2)/2": "k(2)/2",
+                "k(3)/2": "1/2",
+                "1": "0",
+            }[a]
+
+    return ("cos" if c == 0 else "sin") + mtxt._(("arccos" if ac == 0 else "arcsin") + mtxt._(v)), aac(c, ac, v)
+
+def najdite_otrezki_gde_y_0_yravno0_i_y_0_dlya_funktsii():
+# Для функции: y = -|x - 4| - 2 найдите отрезки где y<0; y=0 и y>0 // модуль, параблоа, корень, гипербола
+    t = rnd.randint(1, 4)
+
+    s = rnd.randint(0, 1)
+    text = "y = "
+
+    if t == 1:  # модуль
+        b = mrnd.rnd_w(-7, 7, [0])
+        c = rnd.randint(-7, 7)
+        text += ("" if s == 0 else "-") + mtxt.mod("x" + mtxt.s(b)) + mtxt.s(c)
+        answer = "y = 0 " + ("ни в одной точке" if (s == 0 and c > 0 or s == 1 and c < 0) else \
+            (("в точке " + str(-b)) if c == 0 else \
+            ("в точках " + str(-c-b) + " и " + str(c-b)))) + "; "
+        answer += "y > 0 на " + ("пустом множестве" if (s == 1 and c < 0) else \
+            ("(-oo; +oo)" if (s == 0 and c > 0) else \
+            ("(-oo; " + str(c-b) + ")U(" + str(-c-b) + "; +oo)") if s==0 else \
+            ("(" + str(-c-b) + "; " + str(c-b) + ")"))) + "; "
+        answer += "y < 0 на" + ("пустом множестве" if (s == 0 and c > 0) else \
+            ("(-oo; +oo)" if (s == 1 and c < 0) else \
+            ("(-oo; " + str(c-b) + ")U(" + str(-c-b) + "; +oo)") if s==1 else \
+            ("(" + str(-c-b) + "; " + str(c-b) + ")")))
+
+
+    if t == 2:  # парабола
+        a = rnd.randint(1, 3)
+        b = mrnd.rnd_w(-7, 7, [0])
+        c = mrnd.rnd_w(-3, 3, [0])
+
+        text += ("" if s == 0 else "-") + mtxt.fc(a) + mtxt._("x" + mtxt.s(b)) + "^2" + mtxt.s(c)
+
+        c1, a1 = mf.s_fraction((c, a))
+        c1 = int(math.fabs(c1))
+        com = mtxt.k_t(mtxt.f_t(c1, a1))
+        x1 = str(-b) + "-" + com
+        x2 = str(-b) + "+" + com
+
+        answer = "y = 0 " + ("ни в одной точке" if (s == 0 and c > 0 or s == 1 and c < 0) else \
+            (("в точке " + str(-b)) if c == 0 else \
+            ("в точках " + x1 + " и " + x2))) + "; "
+        answer += "y > 0 на " + ("пустом множестве" if (s == 1 and c < 0) else \
+            ("(-oo; +oo)" if (s == 0 and c > 0) else \
+            ("(-oo; " + x2 + ")U(" + x1 + "; +oo)") if s==0 else \
+            ("(" + x1 + "; " + x2 + ")"))) + "; "
+        answer += "y < 0 на" + ("пустом множестве" if (s == 0 and c > 0) else \
+            ("(-oo; +oo)" if (s == 1 and c < 0) else \
+            ("(-oo; " + x2 + ")U(" + x1 + "; +oo)") if s==1 else \
+            ("(" + x1 + "; " + x2 + ")")))
+
+    if t == 3:  # корень
+        b = rnd.randint(-7, 7)
+        text += ("" if s == 0 else "-") + mtxt.k_t("x" + mtxt.s(b))
+        answer = "y = 0 в точке " + str(-b) + "; "
+        answer += "y > 0 на " + (("(" + str(-b) + "; +oo)") if s == 0 else "пустом множестве") + "; "
+        answer += "y < 0 на " + (("(" + str(-b) + "; +oo)") if s == 1 else "пустом множестве") + ";"
+
+    if t == 4:  # гипербола
+        a = mrnd.rnd_w(-3, 3, [0])
+        b = mrnd.rnd_w(-7, 7, [0])
+        c = mrnd.rnd_w(-3, 3, [0])
+
+        text += str(a) + "/" + mtxt._("x" + mtxt.s(b)) + mtxt.s(c)
+
+        a1, c1 = mf.s_fraction((-a - b * c, c))
+        x1 = mtxt.f_t(a1, c1)
+        answer = "y = 0 в точке " + x1 + "; "\
+            "y > 0 на " + (("(" + x1 + "; +oo)") if s == 0 else ("(-oo; " + x1 + ")")) + "; "\
+            "y < 0 на " + (("(" + x1 + "; +oo)") if s == 1 else ("(-oo; " + x1 + ")")) + ";"
+
+    return text, answer
+
+
+def opredelite_otrezki_gde_vozrastaet_i_ubyivaet_funktsiya():
+# Для функции: y = -|x - 4| - 2 определите отрезки где функция возрастает и убывает // модуль, параблоа, корень, гипербола
+    t = rnd.randint(1, 4)
+
+    s = rnd.randint(0, 1)
+    text = "y = "
+
+    if t == 1: # модуль
+        b = mrnd.rnd_w(-7, 7, [0])
+        c = mrnd.rnd_w(-7, 7, [0])
+        text += ("" if s == 0 else "-") + mtxt.mod("x" + mtxt.s(b)) + mtxt.s(c)
+        if s == 0:
+            answer = "возрастает на [" + str(-b) + "; +oo), убывает на (-oo; " + str(-b) + "]"
+        else:
+            answer = "возрастает на (-oo; " + str(-b) + "], убывает на [" + str(-b) + " ; +oo)"
+
+    if t == 2: #парабола
+        a = rnd.randint(1, 3)
+        b = mrnd.rnd_w(-7, 7, [0])
+        c = mrnd.rnd_w(-3, 3, [0])
+        text += ("" if s == 0 else "-") + mtxt.fc(a) + mtxt._("x" + mtxt.s(b)) + "^2" + mtxt.s(c)
+        if s == 0:
+            answer = "возрастает на [" + str(-b) + "; +oo), убывает на (-oo; " + str(-b) + "]"
+        else:
+            answer = "возрастает на (-oo; " + str(-b) + "], убывает на [" + str(-b) + " ; +oo)"
+
+    if t == 3: #корень
+        b = rnd.randint(-7, 7)
+        text += ("" if s == 0 else "-") + mtxt.k_t("x" + mtxt.s(b))
+        if s == 0:
+            answer = "возрастает на [" + str(-b) + "; +oo)"
+        else:
+            answer = "убывает на [" + str(-b) + "; +oo)"
+
+    if t == 4: #гипербола
+        a = rnd.randint(1, 3)
+        b = mrnd.rnd_w(-7, 7, [0])
+        c = mrnd.rnd_w(-3, 3, [0])
+        text += ("" if s == 0 else "-") + str(a) + "/" + mtxt._("x" + mtxt.s(b)) + mtxt.s(c)
+        if s == 0:
+            answer = "убывает на (-oo; " + str(-b) + ") U (" + str(-b) + "; +oo)"
+        else:
+            answer = "возрастает на (-oo; " + str(-b) + ") U (" + str(-b) + "; +oo)"
+
+    return text, answer
+
+
+def postrojte_grafik_funktsii650():
+# Постройте график функции: y = k(x^2 + 10x + 25) //корень из полного квадрата
+    a = mrnd.rnd_w(-3, 3, [0])
+    b = mrnd.rnd_w(-7, 7, [0])
+    return "y = k(" + mtxt.fc(pow(a, 2)) + "x^2" + mtxt.fc(2 * a * b, False) + "x" + mtxt.s(pow(b, 2)) + ")", "график"
+
+
+def postrojte_grafik_funktsii649():
+# Постройте график функции: y = 3x^2 + 24x + 46 //вынести множитель и получить полный квадрат, добавить и отнять
+    a = mrnd.rnd_w(-3, 3, [0])
+    b = mrnd.rnd_w(-7, 7, [0])
+    c = mrnd.rnd_w(-5, 5, [0])
+    k = mrnd.rnd_w(-3, 3, [0, 1])
+
+    return "y = " + mtxt.fc(k * pow(a, 2)) + "x^2" + mtxt.fc(2 * k * a * b, False) + "x" + mtxt.s(k * pow(b, 2) + c) , "график"
+
+
+def reshite_uravnenie648():
+# Решите уравнение: 2/(x-2)=k(x+1) // гипербола = корень, a>0
+    r = rnd.randint(1, 2)
+
+    p = rnd.randint(-3, 3)
+
+    if r == 1:
+        m = rnd.randint(2, 4)
+        x = p + pow(m, 2)
+        b = rnd.randint(-5, p - 1)
+        c = rnd.randint(1, m - 1)
+        a = m * p - c * p + pow(m, 3) - pow(m, 2) * c - b * m + b * c
+        answer = str(x)
+
+    if r == 2:
+        m1 = rnd.randint(1, 4)
+        m2 = m1 + 2
+        a = int((pow(m2, 2) - pow(m1, 2))/2)
+        c = int((m1 + m2)/2)
+        b = p + int((pow(m2, 2) + pow(m1, 2))/2)
+        x1 = b - a
+        x2 = b + a
+        answer = str(x1) + " и " + str(x2)
+
+    text = str(a) + "/" + mtxt._("x" + mtxt.s(-b)) + mtxt.s(c) + "=" + mtxt.k_t("x" + mtxt.s(-p))
+
+    return text, answer
+
+def reshite_uravnenie647():
+# Решите уравнение: -3/(x-3)=1-x // гипербола = прямая
+    t = rnd.choice([0, 2, 2, 2])
+
+    a = mrnd.rnd_w(-5, 5, [0])
+    b = mrnd.rnd_w(-5, 5, [0])
+    c = mrnd.rnd_w(-5, 5, [0])
+
+    if t == 0:
+        p = rnd.randint(-7, 0)
+        q = c - p * b;
+        r = 1
+        answer = "нет решений"
+
+    if t == 2:
+        r = rnd.randint(1, 6)
+
+        if r == 1:
+            p = -1
+            q = c - 1 - a + b
+            x1 = b-a
+            x2 = b-1
+        if r == 2:
+            p = -1
+            q = c + 1 + a + b
+            x1 = b+a
+            x2 = b+1
+        if r == 3:
+            p = 1
+            q = c - 1 + a - b
+            x1 = b-a
+            x2 = b+1
+        if r == 4:
+            p = 1
+            q = c + 1 - a - b
+            x1 = b-a
+            x2 = b+1
+        if r == 5:
+            p = a
+            q = c - a - a * (b-1)
+            x1 = b-1
+            x2 = b+1
+        if r == 6:
+            ma = a if a > 0 else -a
+            p = a
+            qn, qd = mf.s_fraction(((a*c - b), a))
+            x1 = b-a
+            x2 = b+a
+
+
+        answer = (str(x1) + " и " + str(x2)) if x1 != x2 else str(x1)
+
+    if r != 6:
+        text = str(a) + "/" + mtxt._("x" + mtxt.s(-b)) + mtxt.s(c) + "=" + mtxt.fc(p) + "x" + mtxt.s(q)
+    else:
+        text = str(1 if a > 0 else -1) + "/" + mtxt._(str(ma) + "x" + mtxt.s(-b * ma)) + mtxt.s(c) + "=" \
+               + mtxt.fc(p) + "x" + ("+" if qn * qd > 0 else "") + mtxt.f_t(qn, qd)
+
+    return text, answer
+
+def reshite_uravnenie():
+# Решите уравнение: 2(x-1)^2=2x+2 // парабола = прямая
+    t = rnd.randint(0, 2)
+
+    if t in [0, 1]:
+        a = mrnd.rnd_w(-3, 3, [0])
+        m = mrnd.rnd_w(-2, 2, [0])
+        k1 = a * m
+        k = 2 * k1
+        b = rnd.randint(1, 5) if k1 * a < 0 else rnd.randint(-5, -1)
+        c = int(-2 * b * k1 - pow(k1, 2)/a)
+        if t == 0:
+            c += -rnd.randint(3, 8) if a>0 else rnd.randint(3, 8)
+        answer = str(b + m) if t == 1 else "нет решений"
+
+    if t == 2:
+        x1 = mrnd.rnd_w(-5, 2, [0])
+        x2 = mrnd.rnd_w(x1 + 1, 5, [0])
+        a = mrnd.rnd_w(-3, 3, [0])
+        b = mrnd.rnd_w(-3, 3, [0])
+        k = a * (x1 + x2 - 2*b)
+        c = a * pow(b, 2) + a * b * (b-1) * (x1 + x2) - a*x1*x2
+        answer = str(x1) + " и " + str(x2)
+
+    text = mtxt.fc(a) + mtxt._("x" + mtxt.s(-b)) + "^2=" + mtxt.fc(k) + "x" + mtxt.s(c)
+
+    return text, answer
+
+def najdite_naibolshee_i_naimenshee_znachenie_funktsii645():
+# Найдите наибольшее и наименьшее значение функции: y = -|x - 4| на отрезке х[-2; 1] // модуль, параблоа, корень, гипербола
+    t = rnd.randint(1, 4)
+    s = rnd.randint(0, 1)
+    shx = rnd.randint(-5, 5)
+    shy = rnd.randint(-5, 5)
+
+    x1 = rnd.randint(-6, 3)
+    x2 = rnd.randint(x1 + 1, 6)
+
+    if t == 1:
+        text = ("-" if s == 1 else "") + mtxt.mod("x" + mtxt.s(shx)) + mtxt.s(shy)
+        f1 = (1 if s == 0 else -1) * int(math.fabs(x1 + shx)) + shy
+        f2 = (1 if s == 0 else -1) * int(math.fabs(x2 + shx)) + shy
+        if (x1 < -shx) and (x2 > -shx):
+            f3 = shy
+        else:
+            f3 = f2
+
+    if t == 2:
+        text = ("-" if s == 1 else "") + mtxt._("x" + mtxt.s(shx)) + "^2" + mtxt.s(shy)
+        f1 = (1 if s == 0 else -1) * pow(x1 + shx, 2) + shy
+        f2 = (1 if s == 0 else -1) * pow(x2 + shx, 2) + shy
+        if (x1 < -shx) and (x2 > -shx):
+            f3 = shy
+        else:
+            f3 = f2
+
+    if t == 3:
+        x2min = 0
+        if rnd.randint(0, 1) == 0:
+            x1 = -shx - rnd.randint(0, 5)
+            f1 = shy
+        else:
+            x2min = rnd.randint(1, 3)
+            x1 = pow(x2min, 2) - shx
+            f1 = (1 if s == 0 else -1) * math.sqrt(x1 + shx) + shy
+
+        x2 = pow(rnd.randint(x2min + 1, 6), 2) - shx
+        text = ("-" if s == 1 else "") + mtxt.k_t("x" + mtxt.s(shx)) + mtxt.s(shy)
+
+        f2 = (1 if s == 0 else -1) * math.sqrt(x2 + shx) + shy
+        f3 = f1
+
+    if t == 4:
+        b = rnd.randint(0, 1)
+        if b == 0:
+            x1 = -shx - rnd.randint(1, 5)
+            x2 = -shx + rnd.randint(1, 5)
+            answer = "минимум: -oo; максимум: +oo"
+        else:
+            if rnd.randint(0, 1) == 0:
+                x2 = -shx - rnd.randint(1, 3)
+                x1 = x2 - rnd.randint(1, 3)
+            else:
+                x1 = -shx + rnd.randint(1, 3)
+                x2 = x1 + rnd.randint(1, 3)
+            if s == 0:
+                answer = "минимум:" + mtxt.f_t((1 if s == 0 else -1), x2 + shx) + "; максимум:" + mtxt.f_t((1 if s == 0 else -1), x1 + shx)
+            else:
+                answer = "минимум:" + mtxt.f_t((1 if s == 0 else -1), x1 + shx) + "; максимум:" + mtxt.f_t((1 if s == 0 else -1), x2 + shx)
+
+
+        text = ("-1" if s == 1 else "1") + "/" + mtxt._("x" + mtxt.s(shx)) + mtxt.s(shy)
+
+    text += " на отрезке [" + str(x1) + "; " + str(x2) + "]"
+    if t in [1, 2, 3]:
+        fs = [f1, f2, f3]
+        answer = "минимум:" + str(min(fs)) + "; максимум:" + str(max(fs))
+
+    return text, answer
+
+def zadaj_formulami_uglyi_dlya_kotoryih():
+# Задай формулами углы для которых: синус|косинус равен (+-) 1/3
+    c = rnd.randint(0, 1)
+    s = rnd.randint(0, 1)
+    n = rnd.randint(1, 3)
+    d = rnd.randint(n + 1, 10)
+    n, d = mf.s_fraction((n, d))
+
+    dr = ("-" if s == 1 else "") + mtxt.f_t(n, d)
+
+    return ("косинус" if c == 0 else "синус") + " равен " + dr, \
+           (("+-arccos" + mtxt._(dr) + "+2pi*k") if c == 0 else ("(-1)^k*arcsin" + mtxt._(dr) + "+pi*k")) + ", к-целое"
+
+
+def postrojte_uglyi():
+# Постройте углы: (""|pi) (+-) arcsin(1/3)
+    a = rnd.choice(["", "pi", "pi/2", "-pi/2"])
+    s = rnd.randint(0, 1)
+    c = rnd.randint(0, 1)
+    n = rnd.randint(1, 3)
+    d = rnd.randint(n + 1, 5)
+    n, d = mf.s_fraction((n, d))
+
+    return a + ("" if a == "" and s == 0 else mtxt.p0m1(s, False)) + ("arccos" if c == 0 else "arcsin") + mtxt._(mtxt.f_t(n, d)), \
+           "график"
+
+def vyichislite():
+# Вычислите: arcsin(+-)(1: -1; 0; k(2)/2; k(3)/2; 1/2)
+    c = rnd.randint(0, 1)
+
+    vs = ["-1", "-k(3)/2", "-k(2)/2", "-1/2", "0", "1/2", "k(2)/2", "k(3)/2", "1"]
+    v = rnd.choice(vs)
+
+    def ac(c, a):
+        return {
+            "-1": "pi" if c == 0 else "-pi/2",
+            "-k(3)/2": "5pi/6" if c == 0 else "-pi/3",
+            "-k(2)/2": "3pi/4" if c == 0 else "-pi/4",
+            "-1/2": "2pi/3" if c == 0 else "-pi/6",
+            "0": "pi/2" if c == 0 else "0",
+            "1/2": "pi/3" if c == 0 else "pi/6",
+            "k(2)/2": "pi/4" if c == 0 else "pi/4",
+            "k(3)/2": "pi/6" if c == 0 else "pi/3",
+            "1": "0" if c == 0 else "pi/2",
+        }[a]
+
+    return ("arccos" if c == 0 else "arcsin") + mtxt._(v), ac(c, v)
+
+def suschestvut_li():
+# Существут ли: arcsin(pi/2; 1; k(5)/2; -1/2)
+    c = rnd.randint(0, 1)
+    vs = ["pi/4", "pi/2", "1", "3/2", "-1", "k(5)/2", "k(3)/2", "2", "0", "-pi/2", "-1/2", "180", "1/3"]
+    v = rnd.choice(vs)
+    return ("arccos" if c == 0 else "arcsin") + mtxt._(v), "да" if vs.index(v) % 2 == 0 else "нет"
+
+def reshi_uravnenie640():
+# Реши уравнение: (sin|cos)a = (+-)(1/2; k(2)/2;k(3)/2; )
+    c = rnd.randint(0, 1)
+    vs = ["-k(3)/2", "-k(2)/2", "-1/2", "1/2", "k(2)/2", "k(3)/2"]
+    v = rnd.choice(vs)
+
+    answer = \
+        {
+            0: {
+                "-k(3)/2": "pi +-pi/6 + 2pi*n",
+                "-k(2)/2": "pi +-pi/4 + 2pi*n",
+                "-1/2": "pi +-pi/3 + 2pi*n",
+                "1/2": "+-pi/3 + 2pi*n",
+                "k(2)/2": "+-pi/4 + 2pi*n",
+                "k(3)/2": "+-pi/6 + 2pi*n",
+            },
+
+            1: {
+                "-k(3)/2": "-pi/2 +-pi/6 + 2pi*n",
+                "-k(2)/2": "-pi/2 +-pi/4 + 2pi*n",
+                "-1/2": "-pi/2 +-pi/3 + 2pi*n",
+                "1/2": "pi/2 +-pi/3 + 2pi*n",
+                "k(2)/2": "pi/2 +-pi/4 + 2pi*n",
+                "k(3)/2": "pi/2 +-pi/6 + 2pi*n",
+            }
+        }[c][v]
+
+    return ("cos" if c == 0 else "sin") + mtxt._("x") + "=" + v, \
+           answer
+
+def reshi_uravnenie639():
+# Реши уравнение: (sin|cos)a = (0;1;-1)
+    c = rnd.randint(0, 1)
+    vs = [-1, 0, 1]
+    v = rnd.choice(vs)
+
+    answer = \
+        {
+            1: {
+                -1: "-pi/2 + 2pi*n",
+                0: "pi*n",
+                1: "pi/2 + 2pi*n",
+            },
+
+            0: {
+                -1: "pi + 2pi*n",
+                0: "pi/2 + 2pi*n",
+                1: "2pi*n",
+            }
+        }[c][v]
+
+    return ("cos" if c == 0 else "sin") + mtxt._("x") + "=" + str(v), \
+           answer
+
+def chemu_raven():
+# Чему равен: (sin|cos)a, если (cos|sin)a = (+-)1/3 и  pi/2<a<pi
+    c = rnd.randint(0, 1)
+    ch = rnd.randint(1, 4)
+    vn = rnd.randint(1, 3)
+    vd = rnd.randint(vn + 1, 10)
+    vn, vd = mf.s_fraction((vn, vd))
+
+    sg = "" if (c == 1 and (ch in [1, 4]) or c == 0 and (ch in [1, 2])) else "-"
+    chs = "0<a<pi/2" if ch == 1 else ("pi/2<a<pi" if ch == 2 else ("pi<a<3pi/2" if ch == 3 else "3pi/2<a<2pi"))
+
+    answer = "" if (c == 0 and (ch in [1, 4]) or c == 1 and (ch in [1, 2])) else "-"
+    answer += mtxt.f_t("k(" + str(pow(vd, 2) - pow(vn, 2)) + ")", vd)
+
+    return ("cos" if c == 0 else "sin") + mtxt._("a") + ", если " + ("cos" if c == 1 else "sin") + mtxt._("a") + "=" + \
+        sg + mtxt.f_t(vn, vd) + " и " + chs, answer
+
+def verno_li_utverzhdenie637():
+# Верно ли утверждение:
+#    (существует|не существует) угол a для которого (sin|cos)a = (+-)(k(3)|0|1-k(1/2));
+#    (наибольшее|наименьшее) значение для sin|cos равно (0|-1|1|pi|2pi|k(2))
+    t = rnd.randint(1, 2)
+
+    if t == 1:
+        sh = rnd.randint(0, 1)
+        c = rnd.randint(0, 1)
+        vs = ["k(3)", "0", "-1.2", "1", "1-2k(2)", "1-k(3)", "3/2", "3 - 2k(2)", "1/2 + k(2), -1 + k(2)", "-2", "k(50)/8", "k(50)/7"]
+        v = rnd.choice(vs)
+
+        text = ("" if sh == 0 else "не ") + "существует угол а, для которого " + \
+               ("cos" if c == 0 else "sin") + mtxt._("a") + " равен " + v
+        answer = ("да" if vs.index(v) % 2 == 1 else "нет") if sh == 0 else \
+            ("нет" if vs.index(v) % 2 == 1 else "да")
+
+    if t == 2:
+        n = rnd.randint(0, 1)
+        c = rnd.randint(0, 1)
+        vs = ["-1", "1", "0", "-oo", "+oo"]
+        v = rnd.choice(vs)
+        text = ("наибольшее" if n == 0 else "наименьшее") + " значение для " + \
+               ("cos" if c == 0 else "sin") + mtxt._("x") + " равно " + v
+        answer = "да" if (n == 0 and vs.index(v) == 1 or n == 1 and vs.index(v) == 0) else "нет"
+
+    return text, answer
+
+def uprosti_vyirazhenie():
+# упрости выражение: 2sin(-5pi/6) + 11cos(-7pi/3) + sin(7pi/6) - 8cos(2pi/3)
+    ts = []
+    text = ""
+    l = 3
+
+    for i in range(l):
+        n = rnd.randint(-30, 30)
+        d = 4 if rnd.randint(0, 1) == 0 else 6
+        n, d = mf.s_fraction((n, d))
+        k = mrnd.rnd_w(-10, 10, [0])
+        c = rnd.randint(0, 1)
+        ts.append((k, c, n, d))
+        text += mtxt.fc(k, i == 0) + ("cos" if c == 0 else "sin") + mtxt._(mtxt.ug(n, d))
+
+    def v(ac, an, ad):
+        if an == 0:
+            return (1 if ac == 0 else 0), 1, 0
+        if ad == 1:
+            return (-1 if ac == 0 else 0), 1, 0
+        if ad == 2:
+            if ac == 0:
+                return (0 if an in [1, 3] else 1), 1, 0
+            else:
+                return (0 if an == 2 else (1 if an == 1 else -1)), 1, 0
+        if ad == 3:
+            if ac == 0:
+                return (1, 2, 1) if an in [1, 5] else ((-1, 2, 1) if an in [2, 4] else 1)
+            else:
+                return (1, 2, 3) if an in [1, 5] else ((-1, 2, 3) if an in [2, 4] else 1)
+        if ad == 4:
+            if ac == 0:
+                return (1, 2, 2) if an in [1, 7] else ((-1, 2, 2) if an in [3, 5] else 1)
+            else:
+                return (1, 2, 2) if an in [1, 3] else ((-1, 2, 2) if an in [5, 7] else 1)
+        if ad == 6:
+            if ac == 0:
+                return (1, 2, 3) if an in [1, 11] else ((-1, 2, 3) if an in [5, 7] else 1)
+            else:
+                return (1, 2, 1) if an in [1, 5] else ((-1, 2, 1) if an in [7, 11] else 1)
+
+    answer = ""
+    m = [0, 0, 0, 0]
+    for i in range(l):
+        n, d = tr.reduce2r(ts[i][2], ts[i][3])
+        n, d = tr.invert_a(n, d)
+        c = ts[i][1]
+        k = ts[i][0]
+
+        r = v(c, n, d)
+        tp = r[2]
+        m[tp] += k * r[0]
+
+    answer = ""
+
+    # рациональная часть
+    c1n, c1d = mf.s_fraction((2*m[0] + m[1], 2))
+    answer += mtxt.f_t(c1n, c1d) if c1n != 0 else ""
+
+    # k(2) часть
+    c2n, c2d = mf.s_fraction((m[2], 2))
+    if m[2] != 0:
+        answer += ("+" if m[2] > 0 else "") if answer != "" else ""
+        answer += (mtxt.f_t(c2n, c2d) if not (c2n in [-1, 1] and c2d == 1) else ("" if c2n == 1 else "-")) + "k(2)"
+
+    # k(3) часть
+    c3n, c3d = mf.s_fraction((m[3], 2))
+    if m[3] != 0:
+        answer += ("+" if m[3] > 0 else "") if answer != "" else ""
+        answer += (mtxt.f_t(c3n, c3d) if not (c3n in [-1, 1] and c3d == 1) else ("" if c3n == 1 else "-")) + "k(3)"
+
+    return text, answer
+
+def opredeli_chto_bolshe():
+# определи что больше: cos(13pi/4) или sin(-pi/2)
+    t = rnd.randint(1, 2)
+
+    if t == 1: # разные знаки
+        v = rnd.randint(0, 1)
+        if v == 0:
+            t1 = "cos" + mtxt._(rnd.choice(['pi/5', 'pi/7', '-pi/6', '-pi/3', '7pi/4']))
+            t2 = "sin" + mtxt._(rnd.choice(['5pi/4', '-pi/2', '7pi/6', '-4pi/5', '-pi/10']))
+        else:
+            t1 = "cos" + mtxt._(rnd.choice(['13pi/25', '-9pi/5', '-7pi/6', '-2pi/3', '3pi/4']))
+            t2 = "sin" + mtxt._(rnd.choice(['3pi/4', '3pi/5', '6pi/7', '4pi/5', '9pi/10']))
+
+    if t == 2: # одна и та же функция
+        v = rnd.randint(0, 1)
+        n = rnd.randint(3, 10)
+        if v == 0:
+            t1 = "cos" + mtxt._('pi/' + str(n))
+            t2 = "cos" + mtxt._('pi/' + str(n + 1))
+        else:
+            t1 = "sin" + mtxt._('pi/' + str(n))
+            t2 = "sin" + mtxt._('pi/' + str(n + 1))
+
+    if t == 1:
+        answer = t1 if v == 0 else t2
+    if t == 2:
+        answer = t2 if v == 0 else t1
+
+    return t1 + " или " + t2, answer
+
+
+def opredelite_znak_proizvedeniya():
+# oпределите знак произведения: cos(11pi/4) * sin(-17pi/3)
+    c1 = rnd.randint(0, 1)
+    d1 = 4 if rnd.randint(0, 1) == 0 else 6
+    n1 = rnd.randint(-30, 30)
+    n1, d1 = mf.s_fraction((n1, d1))
+
+    n12, d12 = tr.reduce2r(n1, d1)
+    n12, d12 = tr.invert_a(n12, d12)
+    k1 = n12 / d12
+
+
+    c2 = rnd.randint(0, 1)
+    d2 = 4 if rnd.randint(0, 1) == 0 else 6
+    n2 = rnd.randint(-30, 30)
+    n2, d2 = mf.s_fraction((n2, d2))
+
+    n22, d22 = tr.reduce2r(n2, d2)
+    n22, d22 = tr.invert_a(n22, d22)
+    k2 = n22 / d22
+
+    if ((k1 in [1/2, 3/2] and c1 == 0) or (k1 in [0, 1] and c1 == 0)) or \
+        ((k2 in [1/2, 3/2] and c2 == 0) or (k2 in [0, 1] and c2 == 0)):
+        answer = "0"
+    else:
+        s1 = 1 if ((k1 > 0 and k1 < 1/2) or (k1 > 1/2 and k1 < 1 and c1 == 1) or (k1 > 3/2 and k1 < 2 and c1 == 0)) else -1
+        s2 = 1 if ((k2 > 0 and k2 < 1/2) or (k2 > 1/2 and k2 < 1 and c2 == 1) or (k2 > 3/2 and k2 < 2 and c2 == 0)) else -1
+        answer = "+" if s1 == s2 else "-"
+
+    return ("cos" if c1 == 0 else "sin") + mtxt._(mtxt.ug(n1, d1)) + "*" + \
+        ("cos" if c2 == 0 else "sin") + mtxt._(mtxt.ug(n2, d2)), \
+        answer
+
+
+def opredeli_znak():
+# определи знак: sin|cos -17pi/3
+    c = rnd.randint(0, 1)
+    d = 4 if rnd.randint(0, 1) == 0 else 6
+    n = rnd.randint(-30, 30)
+    n, d = mf.s_fraction((n, d))
+
+    n1, d1 = tr.reduce2r(n, d)
+    n1, d1 = tr.invert_a(n1, d1)
+
+    k = n1 / d1
+
+    if (k in [1/2, 3/2] and c == 0) or (k in [0, 1] and c == 0):
+        answer = "0"
+    else:
+        if k >= 0 and k <= 1 / 2:
+            answer = "+"
+        if k >= 1 / 2 and k <= 1:
+            answer = "-" if c == 0 else "+"
+        if k >= 1 and k <= 3 / 2:
+            answer = "-"
+        if k >= 3 / 2 and k <= 2:
+            answer = "+" if c == 0 else "-"
+
+    return ("cos" if c == 0 else "sin") + mtxt._(mtxt.ug(n, d)), answer
+
+def v_kakoj_chetverti_lezhit_ugol():
+# в какой четверти лежит угол -17pi
+    c = rnd.randint(0, 1)
+    d = 4 if rnd.randint(0, 1) == 0 else 6
+    n = rnd.randint(-30, 30)
+
+    n, d = mf.s_fraction((n, d))
+
+    n1, d1 = tr.reduce2r(n, d)
+    n1, d1 = tr.invert_a(n1, d1)
+
+    k = n1/d1
+
+    if k in [0, 0.5, 1, 1.5, 2]:
+        answer = "лежит на оси"
+    else:
+        if k > 0 and k < 1/2:
+            ch = "в первой"
+        if k > 1/2 and k < 1:
+            ch = "во второй"
+        if k > 1 and k < 3/2:
+            ch = "в третьей"
+        if k > 3/2 and k < 2:
+            ch = "в четвертой"
+        answer = "лежит " + ch + " четверти"
+
+    return mtxt.ug(n, d), answer
+
+def najdi631():
+# найди: (sin|cos) все кратное pi/4 и pi/6 + (pi*k|2pi*k)
+    c = rnd.randint(0, 1)
+    d = 4 if rnd.randint(0, 1) == 0 else 6
+    n = rnd.randint(-30, 30)
+
+    n, d = mf.s_fraction((n, d))
+
+    answer = tr.cs_table(c, n, d)
+
+    return ("cos" if c == 0 else "sin") + mtxt._("0" if n == 0 else mtxt.f_t((str(n) if n != 1 else "") + "pi", d)), \
+            answer
+
+def narisuj_na_edinichnoj_okruzhnosti_ugol():
+# нарисуй на единичной окружности угол: (+-)(pi/6|pi/4|0|pi/3) (+-) (pi|2pi|pi/2|3pi/2)
+    s = rnd.randint(0, 1)
+    k = rnd.randint(0, 1)
+    n = rnd.randint(0, 30)
+
+    if k == 0: #pi/4
+        n1, d1 = mf.s_fraction((n, 4))
+    else:
+        n1, d1 = mf.s_fraction((n, 6))
+
+    return "0" if n == 0 else (("" if s == 0 else "-") + mtxt.f_t((str(n1) if n1 != 1 else "") + "pi", d1)), 'график'
+
+def najdi629():
+# найди: sin|cos (+-)(pi/2|pi|0|-pi|-pi/2) (+-) pi*k
+    c = rnd.randint(0, 1)
+    s = rnd.randint(0, 1)
+    n = rnd.randint(0, 10)
+
+    n1, d1 = mf.s_fraction((n, 2))
+
+    if s == 1:
+        n = 4 - (n % 4)
+
+    if c == 0:
+        answer = "0" if n % 2 == 1 else ("1" if n % 4 == 0 else "-1")
+    if c == 1:
+        answer = "0" if n % 2 == 0 else ("1" if n % 4 == 1 else "-1")
+
+    return ("cos" if c == 0 else "sin") + mtxt._("0" if n1 == 0 else (("" if s == 0 else "-") + mtxt.f_t((str(n1) if n1 != 1 else "") + "pi", d1) )), \
+           answer
+
+def verno_li_utverzhdenie628():
+# Верно ли утверждение:
+#    число равное ординате|абсциссе точки на единичной окружности называется синусом|косинусом угла, соответствующему данной точке;
+#    точка на единичной окружности, соответствующая a имеет координаты (1|0|sin(a)|cos(a));
+#    sin(a)|cos(a) = 0 для (любых a|a=pi*n|pi/2+pi*n| pi + pi/2*n|pi/2*n);
+
+    t = rnd.randint(1, 3)
+
+    if t == 1:
+        a = rnd.randint(0, 1)
+        c = rnd.randint(0, 1)
+        text = "число равное " + ("абсциссе" if a == 0 else "ординате") + " точки на единичной окружности, назвается " + \
+               ("косинусом" if c == 0 else "синусом") + ", угла соответствующего данной точке"
+        answer = "да" if a == c else "нет"
+
+    if t == 2:
+        v = rnd.randint(0, 1)
+        if v == 0:
+            x = "cos(a)"
+            y = "sin(a)"
+        else:
+            tt = rnd.randint(1, 5)
+            if tt == 1:
+                x = 0
+                y = 0
+            if tt == 2:
+                x = 1
+                y = 1
+            if tt == 3:
+                x = 0
+                y = 1
+            if tt == 4:
+                x = "sin(a)"
+                y = "cos(a)"
+            if tt == 5:
+                x = "-cos(a)"
+                y = "sin(a)"
+        text = "точка на единичной окружности, соответствующая углу a имеет координаты " + mtxt.point(x, y)
+        answer = "да" if v == 0 else "нет"
+
+    if t == 3:
+        c = rnd.randint(0, 1)
+        tt = rnd.randint(1, 3)
+        text = ("cos(a)" if c == 0 else "sin(a)") + "=0 " + ("для любых a" if tt == 1 else ("при a=pi*n" if tt == 2 else("при a=pi/2+pi*n" if tt == 3 else ("при a=pi+pi/2*n" if tt == 4 else "при a=pi/2*n"))))
+        answer = "да" if ((c==0 and tt==3) or (c==1 and tt==2)) else "нет"
+
+    return text, answer
+
+def najdi627():
+# найди: (sin|cos) (0; -30 градусов; pi/4 и тд) // все кратное pi/4 и pi/6
+    f = rnd.randint(0, 1)
+    s = rnd.randint(0, 1)
+    k = rnd.randint(0, 1)
+    if k == 0:
+        n = rnd.randint(0, 8)
+        if s == 1:
+            n = 8 - n
+    else:
+        n = rnd.randint(0, 12)
+        if s == 1:
+            n = 12 - n
+
+    if f == 0:
+        if k == 0:
+            if n in [2, 6]:
+                answer = "0"
+            if n in [0, 8]:
+                answer = "1"
+            if n == 4:
+                answer = "-1"
+            if n in [1, 7]:
+                answer = "k(2)/2"
+            if n in [3, 5]:
+                answer = "-k(2)/2"
+        else:
+            if n in [3, 9]:
+                answer = "0"
+            if n in [0, 12]:
+                answer = "1"
+            if n == 6:
+                answer = "-1"
+            if n in [1, 11]:
+                answer = "k(3)/2"
+            if n in [2, 10]:
+                answer = "1/2"
+            if n in [4, 8]:
+                answer = "-1/2"
+            if n in [5, 7]:
+                answer = "-k(3)/2"
+
+    if f == 1:
+        if k == 0:
+            if n in [0, 4, 8]:
+                answer = "0"
+            if n == 2:
+                answer = "1"
+            if n == 6:
+                answer = "-1"
+            if n in [1, 3]:
+                answer = "k(2)/2"
+            if n in [5, 7]:
+                answer = "-k(2)/2"
+        else:
+            if n in [0, 6, 12]:
+                answer = "0"
+            if n == 3:
+                answer = "1"
+            if n == 9:
+                answer = "-1"
+            if n in [2, 4]:
+                answer = "k(3)/2"
+            if n in [1, 5]:
+                answer = "1/2"
+            if n in [7, 11]:
+                answer = "-1/2"
+            if n in [8, 10]:
+                answer = "-k(3)/2"
+
+    return ("cos" if f == 0 else "sin") + " угла в " + ("" if (s == 0) or (n == 0) else "-") + str((45 if k == 0 else 30) * n) + " градусов", \
+           answer
+
+def najdi626():
+# найди: (sin|cos) (0; 270 градусов; -pi/2 и тд) // все кратное pi/2
+    f = rnd.randint(0, 1)
+    n = rnd.randint(0, 4)
+    s = rnd.randint(0, 1)
+
+    if s == 1:
+        n = 4 - n
+
+    if f == 0:
+        if n in [1, 3]:
+            answer = "0"
+        if n in [0, 4]:
+            answer = "1"
+        if n == 2:
+            answer = "-1"
+    if f == 1:
+        if n in [0, 2, 4]:
+            answer = "0"
+        if n == 1:
+            answer = "1"
+        if n == 3:
+            answer = "-1"
+
+    return ("cos" if f == 0 else "sin") + " угла в " + ("" if (s == 0) or (n == 0) else "-") + str(90 * n) + " градусов", \
+           answer
+
+
+def opredeli_znaki_sina_i_cosa_esli_tochka_sootvetstvuyuschaya_uglu_a_lezhit_v():
+# определи знаки sin(a) и cos(a), если точка соответствующая углу a лежит в: I четверти
+    ch = rnd.randint(1, 4)
+    return str(ch) + " четверти" , "sin(a) " + (">" if ch in [1, 2] else "<") + " 0; cos(a) " + (">" if ch in [1, 4] else "<") + " 0;"
+
+
+def kakie_iz_chisel_yavlyayutsya_otritstalnyimi_polozhitelnyimi_neotritsatelnyimi_i_nepolozhitelnyimi():
+# Какие из чисел являются отрицтальными, положительными, неотрицательными и неположительными: 3; -6; -2и1/3; 4,7; 9/16; 0; -5,2; 10,14; 5/8
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
+
+    return " ".join([x[0] for x in res]), \
+        "положительные: " + " ".join([x[0] for x in res if 'положительные' in x[1]]) + "; " + \
+        "отрицательные: " + " ".join([x[0] for x in res if 'отрицательные' in x[1]]) + "; " + \
+        "неположительные: " + " ".join([x[0] for x in res if 'неположительные' in x[1]]) + "; " + \
+        "неотрицательные: " + " ".join([x[0] for x in res if 'неотрицательные' in x[1]]) + "; "
+
+
+def kakie_iz_chisel_nepolozhitelnyie():
+# какие из чисел неположительные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
+
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'неположительные' in x[1]])
+
+
+def kakie_iz_chisel_neotritstalnyie():
+# какие из чисел неотрицтальные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
+
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'неотрицательные' in x[1]])
+
+
+
+def kakie_iz_chisel_polozhitelnyie():
+# какие из чисел положительные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
+
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'положительные' in x[1]])
+
+
+def kakie_iz_chisel_otritsatelnyie():
+# какие из чисел отрицтальные: -1; 10; 4/3; -5/9; -1,0; 0; 3
+    res = []
+    for mn in mrnd.mns:
+        c = rnd.randint(1, 4)
+        for i in range(c):
+            res.append(mrnd.get_ch_mn(mn))
+    rnd.shuffle(res)
+
+    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'отрицательные' in x[1]])
+
+def vyichislite_ploschad_secheniya_shara_ploskostyu_prohodyaschej_cherez_tsentr_shara_esli_radius_shara_raven():
+# Вычислите площадь сечения шара плоскостью, проходящей через центр шара, если радиус шара равен: 3 см
+    r = rnd.randint(1, 7)
+    return str(r) + " см", "{0:.2f}".format(3.14 * pow(r, 2)) + " см^2"
+
+def najdite_ploschad_bokovoj_grani_tsilindra_esli():
+# Найдите площадь боковой грани цилиндра, если: длина образующей равна 6 см, а радиус основания 3 см
+    r = rnd.randint(1, 5)
+    h = rnd.randint(2, 6)
+    return "длина обращзующей равна " + str(h) + " см, а радиус основания " + str(r) + " см" , "{0:.2f}".format(2 * 3.14 * r * h) + " см^2"
+
+def najdite_ploschad_pryamougolnika_esli_odna_ego_storona_ravna():
+# найдите площадь прямоугольника, если одна его сторона равна: 3 см, а другая 4,2 см
+    a = rnd.randint(2, 8)
+    b = rnd.randint(30, 100) / 10
+    return str(a) + " см, а другая " + str(b) + " см", str(a * b) + " см^2"
+
+def kak_izmenitsya_radius_okruzhnosti_esli_dlinu_etoj_okruzhnosti_uvelichit_na():
+# Как измениться радиус окружности, если длину этой окружности увеличить на: 9.42 см?
+    dr = rnd.randint(1, 7)
+    return "{0:.2f}".format(2 * 3.14 * dr) + " см", "увеличиться на " + str(dr) + " см"
+
+def vyirazi_raznitsu_radiusov_okruzhnostej_esli_dlina_odnoj_okruzhnosti():
+# вырази разницу радиусов окружностей, если длина ожной окружности 18,84 см, а другой 12,56 см
+    r1 = rnd.randint(1, 6)
+    r2 = rnd.randint(r1 + 1, 10)
+    return "{0:.2f}".format(2 * 3.14 * r1) + " см, а другой " + "{0:.2f}".format(2 * 3.14 * r2) + " см", str(r2 - r1)  + " см"
+
+def radius_okruzhnosti_uvelichili_na():
+# Радиус окружности увеличили на: 1 см, на сколько увеличилась длина окружности?
+    dr = rnd.randint(1, 5)
+    return str(dr) + " см, на сколько увеличилась длина окружности?" , "{0:.2f}".format(2 * 3.14 * dr) + " см"
+
+def vyirazi_raznitsu_dlin_okruzhnostej_cherez_pi_esli_radius_odnoj_okruzhnosti():
+# вырази разницу длин окружностей через pi, если радиус одной окружности: 2 см, а другой 3 см
+    r1 = rnd.randint(1, 6)
+    r2 = rnd.randint(r1 + 1, 10)
+
+    return str(r1) + " см, а другой " + str(r2) + " см", str(2 * (r2 - r1)) + "*pi"
+
+def vyichislite_radius_okruzhnosti_esli_ploschad_etoj_okruzhnosti_ravna():
+# Вычислите радиус окружности, если площадь этой окружности равна: 314 см^2
+    r = rnd.randint(1, 10)
+    return "{0:.2f}".format(3.14 * pow(r, 2)) + " см^2", str(r) + " см"
+
+def vyichislite_ploschad_okruzhnosti_esli_ee_radius_raven():
+# Вычислите площадь окружности, если ее радиус равен: 3 см
+    r = rnd.randint(1, 7)
+    return str(r) + " см" , "{0:.2f}".format(3.14 * pow(r, 2)) + " см^2"
+
+def vyichislite_radius_okruzhnosti_esli_dlina_etoj_okruzhnosti_ravna():
+# Вычислите радиус окружности, если длина этой окружности равна: 18,84 см
+    pi = 3.14
+    r = rnd.randint(1, 7)
+    return "{0:.2f}".format(2 * 3.14 * r) + " см", str(r) + " см"
+
+def ispolzuya_grafiki_funktsij609():
+# Используя графики функций: y=2/x и y = -x + 2 решите неравенство: 2/x <= -x+2
+
+    lr = rnd.randint(0, 1)
+
+    t = rnd.randint(0, 2)
+
+    if t == 0:
+        k = mrnd.rnd_w(-5, 5, [0])
+        a = rnd.randint(-10, -1) if k > 0 else rnd.randint(1, 10)
+        b = 0
+
+        answer = "(-oo; 0)" if (k < 0 and lr == 0 or k > 0 and lr == 1) else "(0; +oo)"
+
+    if t == 1:
+        a = mrnd.rnd_w(-5, 5, [0])
+        k = -a
+        b = int(math.sqrt(-4 * a * k))
+        x1 = int(-b / 2 / a)
+        answer = "(-oo; 0)" if (k < 0 and lr == 0 or k > 0 and lr == 1) else "(0; +oo)"
+
+    if t == 2:
+        x1 = mrnd.rnd_w(-5, 3, [0])
+        x2 = mrnd.rnd_w(x1 + 1, 5, [0])
+
+        a, b, k = mf.quad_pol_by_roots((x1, 1), (x2, 1))
+        k = -k
+
+        if x2 < 0:
+            x3 = 0
+        if x2 > 0 and x1 < 0:
+            x3 = x2
+            x2 = 0
+        if x1 > 0:
+            x3 = x2
+            x2 = x1
+            x1 = 0
+
+        def get_sk(ts, x):
+            if ts == 0:
+                if x == 0:
+                    return "("
+                else:
+                    return "["
+            else:
+                if x == 0:
+                    return ")"
+                else:
+                    return "]"
+
+        answer = (get_sk(0, x1) + str(x1) + "; " + str(x2) + get_sk(1, x2) + " U " + get_sk(0, x3) + str(x3) + "; +oo)") if ((lr == 1 and a > 0) or (lr == 0 and a < 0)) else \
+            ("(-oo; " + str(x1) + get_sk(1, x1) + " U " + get_sk(0, x2) + str(x2) + "; " + str(x3) + get_sk(1, x3))
+
+
+    return "y=" + str(k) + "/x и y=" + mtxt.fc(a) + "x" + mtxt.s(b) + " решите неравенство " + str(k) + "/x " + (">=" if lr == 0 else "<=") + " " + mtxt.fc(a) + "x" + mtxt.s(b), \
+            answer
+
+def reshi_graficheski_uravnenie608():
+# Реши графически уравнение: 2/x = -x/2 // пересечение линейной и обратной функции
+    t = rnd.randint(1, 3)
+
+    if t == 1:
+        k = mrnd.rnd_w(-5, 5, [0])
+        a = rnd.randint(-10, -1) if k > 0 else rnd.randint(1, 10)
+        b = 0
+        answer = "нет решений"
+
+    if t == 2:
+        a = mrnd.rnd_w(-5, 5, [0])
+        k = -a
+        b = int(math.sqrt(-4*a*k))
+        x1 = int(-b/2/a)
+        answer = str(x1)
+
+    if t == 3:
+        x1 = mrnd.rnd_w(-5, 5, [0])
+        x2 = mrnd.rnd_w(-5, 5, [0, x1])
+
+        a, b, k = mf.quad_pol_by_roots((x1, 1), (x2, 1))
+        k = -k
+        answer = str(x1) + " и " + str(x2)
+
+    return str(k) + "/x = " + mtxt.fc(a) + "x" + mtxt.s(b), answer
+
+def najdite_naibolshee_i_naimenshee_znachenie_funktsii():
+# Найдите наибольшее и наименьшее значение функции: y = -2/x на отрезке [-2; -1] //Возможно нужно рассмаотреть случай с перекрытием нуля
+    k = mrnd.rnd_w(-3, 3, [0])
+    x1 = mrnd.rnd_w(-7, 5, [0])
+    x2 = mrnd.rnd_w(x1 + 1, 7, [0])
+
+    if x1 * x2 > 0:
+        n1, d1 = mf.s_fraction((k, x1))
+        n2, d2 = mf.s_fraction((k, x2))
+
+        if k > 0:
+            vmin = mtxt.f_t(n2, d2)
+            vmax = mtxt.f_t(n1, d1)
+        else:
+            vmin = mtxt.f_t(n1, d1)
+            vmax = mtxt.f_t(n2, d2)
+
+        answer = "min = " + vmin + ", max = " + vmax
+    else:
+        answer = "min = -oo, max = +oo"
+
+    return "y = " + str(k) + "/x на отрезке [" + str(x1) + "; " + str(x2) + "]", \
+           answer
+
+def kakomu_promezhutku_prinadlezhit_x_esli():
+# Какому промежутку принадлежит x, если: y принадлежить промежутку [-1/2; 2] для функции y = 1/x
+    k = mrnd.rnd_w(-5, 5, [0])
+
+    x1n = mrnd.rnd_w(-3, 3, [0])
+    x1d = rnd.choice([5, 7, 11])
+
+    x2n = rnd.randint(1, 3)
+    x2d = 1
+
+    if k > 0:
+        n, d = mf.s_fraction((k, x2n))
+        n1, d1 = mf.s_fraction((k * x1d, x1n))
+        if x1n > 0:
+            answer = "[" + mtxt.f_t(n, d)  + "; "  + mtxt.f_t(n1, d1) + "]"
+        else:
+            answer = "[" + mtxt.f_t(n1, d1) + "; 0) U (0; " + mtxt.f_t(n, d) + "]"
+    else:
+        n, d = mf.s_fraction((k, x2n))
+        n1, d1 = mf.s_fraction((k * x1d, x1n))
+        if x1n > 0:
+            answer = "[" + mtxt.f_t(n1, d1)  + "; "  + mtxt.f_t(n, d) + "]"
+        else:
+            answer = "[" + mtxt.f_t(n, d) + "; 0) U (0; " + mtxt.f_t(n1, d1) + "]"
+
+    return "y принадлежит промежутку [" + mtxt.f_t(x1n, x1d) + "; " + str(x2n) + "] для функции y=" + str(k) + "/x", \
+           answer
+
+def v_kakih_chetveryath_raspolozhen_grafik_funktsii():
+# В каких четверятх расположен график функции: y = 3/x
+    k = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    return "y=" + str(k) + "/x", "I и III" if k > 0 else "II и IV"
+
+def postroj_grafik_funktsii604():
+# построй график функции: y = (+|-)3/x
+    k = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    return "y=" + str(k) + "/x", "график"
+
+def chemu_ravno603():
+# чему равно: -3/x, если x = 0 | +бесконечность | -бесконечность
+    k = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    t = rnd.randint(1, 4)
+    if t == 1:
+        s = "положительное и почти 0"
+        answer = ("+" if k > 0 else "-") + "oo"
+    if t == 2:
+        s = "отрицательное и почти 0"
+        answer = ("-" if k > 0 else "+") + "oo"
+    if t == 3:
+        s = "+oo"
+        answer = ("положительное" if k > 0 else "отрицательное") + " и почти 0"
+    if t == 4:
+        s = "-oo"
+        answer = ("отрицательное" if k > 0 else "положительное") + " и почти 0"
+
+    return str(k) + "/x, если x = " + s, answer
+
+def chemu_ravno602():
+# чему равно: -3/x, если x = (+|-) 3 | 1/3
+    k = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    obr = rnd.choice([True, False])
+    x = k if k > 0 else -k
+    s = rnd.randint(0, 1)
+    return str(k) + "/x, если x = " + (str(x * (1 if s == 0 else -1)) if not obr else (("" if s == 0 else "-") + ("1/" + str(x))) ) , \
+           str((x * x * (1 if (k * (1 if s == 0 else -1) > 0) else -1 )) if obr else ((1 if (k * (1 if s == 0 else -1) > 0) else -1) ))
+
+def postrojte_grafik_funktsii601():
+# Постройте график функции: y = (2x^3 + 2x^2)/(x+1)
+    x1 = mrnd.rnd_w(-7, 7, [0])
+    k = mrnd.rnd_w(-3, 3, [0])
+    s = rnd.randint(0, 1)
+    return mtxt._(mtxt.fc(k) + "x^3" + mtxt.fc(k * x1, is_first=False) + "x^2") + "/" + mtxt._("x" + mtxt.s(x1)), \
+           "график"
+
+def uprostite_vyirazhenie600():
+# упростите выражение: (2x^3 + 2x^2)/(x+1), при условии, что x не равен -1
+    x1 = mrnd.rnd_w(-7, 7, [0])
+    k = mrnd.rnd_w(-3, 3, [0])
+    s = rnd.randint(0, 1)
+    return mtxt._(mtxt.fc(k) + "x^3" + mtxt.fc(k * x1, is_first=False) + "x^2") + "/" + mtxt._("x" + mtxt.s(x1)) + " при условии, что x не равен " + str(-x1), \
+           mtxt.fc(k) + "x^2, если x не равен " + str(-x1)
+
+def skolko_reshenij_imeet_uravnenij_fxravnop_v_zavisimosti_ot_p_esli():
+# Сколько решений имеет уравнений f(x)=p в зависимости от p, если: f(x) = {x + 3, если -4<=x<=-1; 2x^2, если -1<x<=1; -x + 3, если 1<x<=3}
+    n = mrnd.rnd_w(-2, 2, [0])
+    xp1 = mrnd.rnd_w(-4, 2, [0])
+    xp2 = mrnd.rnd_w(xp1 + 1, 4, [0])
+    k1 = mrnd.rnd_w(-2, 2)
+    k2 = mrnd.rnd_w(-2, 2, [k1])
+
+    b1 = n * pow(xp1, 2) - k1 * xp1
+    b2 = n * pow(xp2, 2) - k2 * xp2
+
+    x1 = rnd.randint(xp1 - 5, xp1 - 2)
+    x2 = rnd.randint(xp2 + 2, xp2 + 5)
+
+    # n = 2
+    # xp1 = -1
+    # xp2 = 1
+    # k1 = 2
+    # k2 = 0
+    # b1 = 4
+    # b2 = 2
+    # x1 = -4
+    # x2 = 3
+
+    ys = [k1 * x1 + b1]
+    if k1 != 0:
+        ys.append(k1 * xp1 + b1)
+    if xp1 < 0 and xp2 > 0:
+        ys.append(0)
+    ys.append(k2 * xp2 + b2)
+    if k2 != 0:
+        ys.append(k2 * x2 + b2)
+    ysz = zip(ys, ys[1:], ys[2:])
+
+    ysr = [ys[0]]
+    for y1, y2, y3 in ysz:
+        if (y1 < y2 and y2 > y3) or (y1 > y2) and (y2 < y3):
+            ysr.append(y2)
+    ysr.append(ys[len(ys) - 1])
+
+    ysr_sorted = sorted(ysr)
+    ysr_sorted_z = zip(ysr_sorted, ysr_sorted[1:])
+
+    res = []
+
+    for y1z, y2z in ysr_sorted_z:
+        c = 0
+        ysr_z = zip(ysr, ysr[1:])
+        for y1, y2 in ysr_z:
+            c += 1 if ((y1 <= y1z and y2 >= y2z) or (y2 <= y1z and y1 >= y2z)) else 0
+        res.append((y1z, y2z, c))
+
+    answer = ""
+    for i, r in enumerate(res):
+        answer += str(r[2]) + " при " + str(r[0]) + ("<=" if (i == 0 and k1 != 0) else "<") + "p" + ("<=" if (i == len(res) - 1) and k2 != 0 else "<") + str(r[1]) + "; "
+        if i > 0 and i < len(res) - 1:
+            answer += str(r[2] - 1) + " при p=" + str(r[0]) + "; "
+
+    if k1 == 0:
+        answer += "бесконеч. решений при p=" + str(b1)
+    if k2 == 0:
+        answer += "бесконеч. решений при p=" + str(b2)
+
+
+    return "f(x) = {" + ((mtxt.fc(k1) + "x") if k1 != 0 else "") + mtxt.s(b1) + ", если " + str(x1) + " <= x <= " + str(xp1) + "; " + \
+           mtxt.fc(n) + "x^2, если " + str(xp1) + " < x <= " + str(xp2) + "; " + ((mtxt.fc(k2) + "x") if k2 != 0 else "") + mtxt.s(b2) + ", если " + \
+           str(xp2) + " < x <= " + str(x2) + "}", "ответ не правильный: " + answer
+
+def postrojte_grafik_funktsii598():
+# постройте график функции: f(x) = {x + 3, если -4<=x<=-1; 2x^2, если -1<x<=1; -x + 3, если 1<x<=3}
+    n = mrnd.rnd_w(-3, 3, [0])
+    xp1 = mrnd.rnd_w(-4, 2, [0])
+    xp2 = mrnd.rnd_w(xp1 + 1, 4, [0])
+    k1 = mrnd.rnd_w(-4, 4)
+    k2 = mrnd.rnd_w(-4, 4, [k1])
+
+    b1 = n * pow(xp1, 2) - k1 * xp1
+    b2 = n * pow(xp2, 2) - k2 * xp2
+
+    x1 = rnd.randint(xp1 - 5, xp1 - 2)
+    x2 = rnd.randint(xp2 + 2, xp2 + 5)
+
+
+    return "f(x) = {" + ((mtxt.fc(k1) + "x") if k1 != 0 else "") + mtxt.s(b1) + ", если " + str(x1) + " <= x <= " + str(xp1) + "; " + \
+           mtxt.fc(n) + "x^2, если " + str(xp1) + " < x <= " + str(xp2) + "; " + ((mtxt.fc(k2) + "x") if k2 != 0 else "") + mtxt.s(b2) + ", если " + \
+           str(xp2) + " < x <= " + str(x2) + "}", 'график'
+
+def postrojte_grafik_funktsii597():
+# постройте график функции: f(x) = {x + 3, если -2<=x<=-1; 2x^2, если -1<x<=2}
+    n = mrnd.rnd_w(-3, 3, [0])
+    xp = mrnd.rnd_w(-3, 3, [0])
+    k = mrnd.rnd_w(-6, 6)
+
+    b = n * pow(xp, 2) - k * xp
+
+    x1 = rnd.randint(xp - 5, xp - 2)
+    x2 = rnd.randint(xp + 2, xp + 5)
+
+    return "f(x) = {" + ((mtxt.fc(k) + "x") if k != 0 else "") + mtxt.s(b) + ", если " + str(x1) + " <= x <= " + str(xp) + "; " +\
+        mtxt.fc(n) + "x^2, если " + str(xp) + " < x <= " + str(x2) + "}", 'график'
+
+def pust():
+# Пусть: f(x)=x^2 + 6x - 1, постройте график функции: f(x) = 0,3f(x-3) + 3 // преобразуется к f(x)=ax^2
+    kn = 1
+    kd = rnd.choice([2, 3, 4, 5])
+
+    a = mrnd.rnd_w(-5, 5, [0])
+    b = 2 * a * mrnd.rnd_w(-2, 2, [0])
+    c = mrnd.rnd_w(-5, 5, [0])
+
+    d = int(-b/(2 * a))
+    mn = -kn * (a * pow(d, 2) + b * d + c)
+    md = kd
+
+    # TODO: проверить результат руками!!!!!
+
+    return "f(x) = " + mtxt.fc(a) + "x^2" + mtxt.fc(b, is_first=False) + "x" + mtxt.s(c) + ", постройте график функции: " + \
+        "f(x) = " + mtxt.f_t(kn, kd) + "f(x" + mtxt.s(d) + ")" + ("" if mn < 0 else "+") + mtxt.f_t(mn, md), \
+           "график функции y=" + mtxt.f_t(a * kn, kd) + "x^2"
+
+def uprostite_vyirazhenie595():
+# упростите выражение: x^2 + 6x - 1, заменив x на x-3
+    a = mrnd.rnd_w(-5, 5, [0])
+    b = mrnd.rnd_w(-5, 5, [0])
+    c = mrnd.rnd_w(-5, 5, [0])
+    d = mrnd.rnd_w(-5, 5, [0])
+    return mtxt.fc(a) + "x^2" + mtxt.fc(b, is_first=False) + "x" + mtxt.s(c) + ", заменив x на x" + mtxt.s(d), \
+           mtxt.fc(a) + "x^2" + mtxt.fc(2 * a * d + b, is_first=False) + "x" + mtxt.s(b * d + c)
+
+def uprostite_vyirazhenie594():
+# упростите выражение: a^2 + 6a - 1, если a=x-3
+    a = mrnd.rnd_w(-5, 5, [0])
+    b = mrnd.rnd_w(-5, 5, [0])
+    c = mrnd.rnd_w(-5, 5, [0])
+    d = mrnd.rnd_w(-5, 5, [0])
+    return mtxt.fc(a) + "a^2" + mtxt.fc(b, is_first=False) + "a" + mtxt.s(c) + ", если a=x" + mtxt.s(d), \
+           mtxt.fc(a) + "x^2" + mtxt.fc(2 * a * d + b, is_first=False) + "x" + mtxt.s(b * d + c)
+
+def uprostite_vyirazhenie():
+# упростите выражение: 2a + 3, если a=x-3
+    a = mrnd.rnd_w(-5, 5, [0])
+    b = mrnd.rnd_w(-5, 5, [0])
+    c = mrnd.rnd_w(-5, 5, [0])
+    return mtxt.fc(a) + "a" + mtxt.s(b) + ", если a=x" + mtxt.s(c) , mtxt.fc(a) + "x" + mtxt.s(a * c + b)
+
+
+def skolko_polnyih_oborotov_i_v_kakuyu_storonu_soderzhitsya_v_ugle():
+# Сколько полных оборотов и в какую сторону содержится в угле: - 13 и 1/2 pi радиан
+    s = rnd.choice([-1, 1])
+    n = rnd.randint(1, 16)
+    n1 = rnd.choice([1, 2, 3, 5, 6, 7])
+    nn, dd = mf.s_fraction((n1, 4))
+    return str(s * n) + " и " +  mtxt.f_t(nn, dd) + " pi радиан", str(n // 2) + " " + ("по" if s == 1 else "против") + \
+        " часовой стрелке"
+
+def skolko_oborotov_soderzhitsya_v_ugle():
+# сколько оборотов содержится в угле: 4pi радиан
+    n = rnd.randint(1, 16)
+    return str(n) + " pi радиан", str(n // 2)
+
+def kakoj_ugol_bolshe():
+# Какой угол больше: 60 градусов или pi/3 радиан
+    n1 = rnd.randint(1, 11)
+    n2 = rnd.randint(1, 7)
+
+    nn, dd = mf.s_fraction((n2, 4))
+    s1 = str(n1 * 30) + " градусов"
+    s2 = mtxt.f_t(nn, dd) + " pi радиан"
+    m = [s1, s2]
+#    rnd.shuffle(m)
+    return " или ".join(m), "равны" if 8 * n1 == 12 * n2 else (s2 if (n2 * 57.3 * 3.14 / 4) > (n1 * 30) else s1)
+
+def vyirazite_v_gradusah_ugol():
+# Выразите в градусах угол: - pi/2 радиан
+    s = rnd.choice([-1, 1])
+    n = rnd.randint(1, 4)
+    n1, d1 = mf.s_fraction((s * n, 4))
+    return mtxt.f_t(n1, d1) + " pi радиан", str(s * n * 45) + " градусов"
+
+def vyirazite_v_radianah_ugol():
+# Выразите в радианах угол: -135 градусов
+    n = rnd.randint(1, 4)
+    s = rnd.choice([-1, 1])
+    n1, d1 = mf.s_fraction((s * n, 4))
+    return str(45 * n * s) + " градусов", mtxt.f_t(n1, d1) + " pi радиан"
+
+def kakuyu_chast_ot_razvernutogo_ugla_sostavlyaet_ugol_v():
+# какую часть от развернутого угла, составчлет угол в: 135 градусов
+    n = rnd.randint(1, 4)
+    n1, d1 = mf.s_fraction((n, 4))
+    return str(45 * n) + " градусов", mtxt.f_t(n1, d1)
+
+def vyiberite_vernoe_utverzhdenie():
+# выберите верное утверждение:
+#    1 радиан (примерно равен (57|114|29) | немного больше 114 | немного меньше 29) градусов
+#    (1|2) радиан это угол, которые получается если по окружности с радиусом (1|2)R пройти путь длиной в R;
+#    развернутый угол это (2|1/2|1)pi радиан;
+#   полный оборот это (1|2|1/2)pi радиан
+
+    text = ""
+    answer = ""
+
+    t = rnd.randint(1, 4)
+    if t == 1:
+        tt = rnd.randint(1, 3)
+        v = rnd.randint(0, 1)
+        if v == 0:
+            text = "1 радиан примерно равен 57 градусам"
+            answer = "верно"
+        else:
+            text = "1 радиан " + ("примерно равен " + ("114" if rnd.choice([True, False]) else "29") if tt == 1 \
+                                      else ("немного больше 114" if tt == 2 else "немного меньше 29")) + " градусов"
+            answer = "не верно"
+    if t == 2:
+        o = rnd.randint(1, 2)
+        n = rnd.choice([1, 2, 3])
+        text = ("1 радиан" if o == 1 else "2 радиана") + " это угол, который получается если по окружности радиусом R пройти путь длиной в " + \
+               ("" if n == 1 else ("2" if n == 2 else "1/2")) + " R"
+        answer = "верно" if o == n else "не верно"
+    if t == 3:
+        u = rnd.choice([1, 2, 3])
+        text = "развернутый угол - это " + ("" if u == 1 else ("2" if u == 2 else "1/2")) + " pi радиан"
+        answer = "верно" if u == 1 else "не верно"
+    if t == 4:
+        u = rnd.choice([1, 2, 3])
+        text = "полный оборот - это " + ("" if u == 1 else ("2" if u == 2 else "1/2")) + " pi радиан"
+        answer = "верно" if u == 2 else "не верно"
+
+    return text, answer
+
+def vyichislite_dlinu_okruzhnosti_esli_ee_radius_raven():
+# Вычислите длину окружности, если ее радиус равен: 3 см
+    r = rnd.randint(1, 12)
+    return str(r) + " см", "{0:.2f}".format(2 * 3.14 * r) + " см"
+
+def pri_kakih_znacheniyah_a_tochka():
+# При каких значениях a точка: (a; 64) принадлежит графику функции y = 2x^(2|3)
+    k = mrnd.rnd_w(-4, 4, [0])
+    p = rnd.choice([2, 3])
+    x = mrnd.rnd_w(-4, 4, [0])
+    y = k * pow(x, p)
+
+    answer = ""
+    if p == 2:
+        if rnd.randint(0, 1) == 0:
+            answer = str(x) + " и " + str(-x)
+        else:
+            answer = "не при каких"
+            y = -y
+    else:
+        answer = str(x)
+
+    return mtxt.point("a", y) + " принадлежит графику функции y=" + mtxt.fc(k) + "x^" + str(
+        p), answer
+
+
+def prinadlezhit_li_tochka():
+# принадлежит ли точка: (2; 8) графику функции y = 2x^(2|3)
+    k = mrnd.rnd_w(-4, 4, [0])
+    p = rnd.choice([2, 3])
+    pr = rnd.randint(0, 1)
+    x = mrnd.rnd_w(-4, 4, [0])
+    y = k * pow(x, p) if pr == 0 else k * pow(x, p) + mrnd.rnd_w(-10, 10, [0])
+    return mtxt.point(x, y) + " графику функции y=" + mtxt.fc(k) + "x^" + str(p), "принадлежит" if pr == 0 else "не принадлжеит"
+
+
+def kakomu_uglu_sootvetstvuet582():
+# Какому углу соответствует: 1 и 3/4 оборота (в обратную сторону)
+    obr = rnd.randint(0, 1)
+    n = rnd.randint(1, 7)
+    n1, d1 = mf.s_fraction((n, 8))
+    m = rnd.randint(1, 3)
+    return str(m) + " и " + mtxt.f_t(n1, d1) + " оборота" + ("" if obr == 1 else " в обратную сторону"), \
+           ("" if obr == 1 else "-") + str((m * 8 + n)*45) + " градусов"
+
+def kakomu_uglu_sootvetstvuet():
+# какому углу соответствует: 3/4 оборота // крато 1/8 оборота
+    n = rnd.randint(1, 7)
+    n1, d1 = mf.s_fraction((n, 8))
+    return mtxt.f_t(n1, d1) + " оборота", str(45 * n)
+
+def kakomu_uglu_sootvetsvutet():
+# какому углу соответсвутет: 2 оборота // целое число оборотов
+    n = rnd.randint(1, 4)
+    return str(n) + " оборота", str(n * 360) + " градусов"
+
+def otobrazi_na_koordinatnoj_ploskosti_ugol():
+# Отобрази на координатной плоскости угол: -270 град.
+    s = rnd.randint(0, 1)
+    n = rnd.randint(1, 7)
+    return str((1 if s == 0 else -1) * n * 45) + " градусов", "рисунок"
+
+def vyirazi_obyiknovennoj_drobyu_chislo_oborotov_sootvetstvuyuschee_uglu():
+# Вырази обыкновенной дробью число оборотов, соответствующее углу: (+|-)450 град.
+    s = rnd.randint(0, 1)
+    n = rnd.randint(1, 7)
+    m = rnd.randint(0, 2)
+
+    n1, d1 = mf.s_fraction((m * 8 + n, 8))
+
+    return str((1 if s == 0 else -1) * (m * 360 + n * 45)) + " градусов", ("" if s == 0 else "-") + mtxt.f_t(n1, d1)
+
+def v_kakuyu_storonu_nuzhno_delat_oborotyi_protiv_chasovoj_ili_po_chasovoj_strelke_chtobyi_sootvetstvovat_uglu():
+# в какую сторону нужно делать обороты (против часовой или по часовой стрелке), чтобы соответствовать углу: 720 град
+    s = rnd.randint(0, 1)
+    n = rnd.randint(1, 7)
+    return str((1 if s == 0 else -1) * n * 45) + " градусов", "по часовой" if s == 0 else "против часовой"
+
+def kakaya_chast_oborota_sootvetstvuet_uglu():
+# какая часть оборота соответствует углу: 270 град // кратно 1/8 полного оборота
+    n = rnd.randint(1, 7)
+    m, d = mf.s_fraction((n, 8))
+    return str(int(45 * n)) + " градусов", mtxt.f_t(m, d)
+
+def skolko_oborotov_sootvetstvuet_uglu():
+# сколько оборотов соответсвуте углу: 720 град // 360*n
+    n = rnd.randint(1, 6)
+    return str(n * 360) + " градусов", str(n)
+
+def ispolzuya_grafiki_funktsij():
+# Используя графики функций: y=-x^2 и y=2x-3, реши неравенство: -x^2 >= 2x-3
+    v = rnd.randint(0, 1)
+
+    x1 = (mrnd.rnd_w(-4, 4, [0]), mrnd.rnd_w(-5, 5, [0]))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(-5, 5, [0, x1[0]]))
+
+    if x1[0] / x1[1] > x2[0] / x2[1]:
+        t = x1
+        x1 = x2
+        x2 = t
+
+    a, b, c = mf.quad_pol_by_roots(x1, x2)
+
+    x1n, x1d = mf.s_fraction((x1[0], x1[1]))
+    x2n, x2d = mf.s_fraction((x2[0], x2[1]))
+
+    if (v == 0 and a > 0) or (v == 1 and a < 0):
+        answer = "(-бесконечность; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +бесконечность)"
+    else:
+        answer = "[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]"
+
+    y1s = mtxt.fc(a) + "x^2"
+    y2s = mtxt.fc(-b) + "x" + mtxt.s(-c)
+
+    return "y=" + y1s + " и y=" + y2s + " реши неравенство " + y1s + " " + (">=" if v == 0 else "<=") + " " + y2s, answer
+
+
+def na_kakih_otrezkah_grafik_funktsii():
+# на каких отрезках график функции: -x^2 лежит выше | ниже графика функции y = 2x-3
+    v = rnd.randint(0, 1)
+
+    x1 = (mrnd.rnd_w(-4, 4, [0]), mrnd.rnd_w(-5, 5, [0]))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(-5, 5, [0, x1[0]]))
+
+    if x1[0] / x1[1] > x2[0] / x2[1]:
+        t = x1
+        x1 = x2
+        x2 = t
+
+    a, b, c = mf.quad_pol_by_roots(x1, x2)
+
+    x1n, x1d = mf.s_fraction((x1[0], x1[1]))
+    x2n, x2d = mf.s_fraction((x2[0], x2[1]))
+
+    if (v == 0 and a > 0) or (v == 1 and a < 0):
+        answer = "(-бесконечность; " + mtxt.f_t(x1n, x1d) + ") и (" + mtxt.f_t(x2n, x2d) + "; +бесконечность)"
+    else:
+        answer = "(" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + ")"
+
+    return "y=" + mtxt.fc(a) + "x^2 лежит " + ("выше" if v == 0 else "ниже") + " графика функции y=" + mtxt.fc(-b) + "x" + mtxt.s(-c), \
+           answer
+
+def grafik_kakoj_funktsii_lezhit():
+# график какой функции лежит: выше | ниже в точке x = -2 , y = -x^2 или y = -x - 3
+    v = rnd.randint(0, 1)
+    k = mrnd.rnd_w(-4, 4, [-1, 0, 1])
+    a = mrnd.rnd_w(-7, 7, [0])
+    b = mrnd.rnd_w(-7, 7, [0, a])
+    x = rnd.randint(-5, 5)
+
+    y1s = mtxt.fc(k) + "x^2"
+    y2s = mtxt.fc(a) + "x" + mtxt.s(b)
+    y1v = k * pow(x, 2)
+    y2v = a * x + b
+
+    if y1v == y2v:
+        answer = "значения одинаковы"
+    else:
+        answer = (y1s if y1v > y2v else y2s) if v == 0 else (y1s if y1v < y2v else y2s)
+
+    return ("выше" if v == 0 else "ниже") + " в точке x=" + str(x) + " y=" + y1s + " или y=" + y2s, answer
+
+def chto():
+    # что: меньше | больше -x^2 или 2x-3, если x = -2
+    m = rnd.randint(0, 1)
+    k = mrnd.rnd_w(-4, 4, [-1, 0, 1])
+    a = mrnd.rnd_w(-7, 7, [0])
+    b = mrnd.rnd_w(-7, 7, [0, a])
+    x = rnd.randint(-5, 5)
+
+    y1s = mtxt.fc(k) + "x^2"
+    y2s = mtxt.fc(a) + "x" + mtxt.s(b)
+    y1v = k * pow(x, 2)
+    y2v = a * x + b
+
+    if y1v == y2v:
+        answer = "значения одинаковы"
+    else:
+        answer = (y1s if y1v < y2v else y2s) if m == 0 else (y1s if y1v > y2v else y2s)
+
+    return ("меньше" if m == 0 else "больше") + " " + y1s + " или " + y2s + ", если x=" + str(x), answer
+
+def graficheski_opredeli_chislo_reshenij_sistemyi_uravnenij():
+# Графически определи число решений системы уравнений: {y=3x^2; y=x-3}
+    t = rnd.randint(0, 2)
+
+    a, b, c = mrnd.quad_pol_by_rcount(t)
+    b = -b
+    c = -c
+
+    return "{y=" + mtxt.fc(b) + "x" + mtxt.s(c) + "; y=" + mtxt.fc(a) + "x^2}", \
+           ("0") if t == 0 else ("1" if t == 1 else "2")
+
+def skolko_raz_grafik_pryamoj():
+# сколько раз график прямой y=x-3 пересекает параболу y = 3x^2
+    t = rnd.randint(0, 2)
+
+    a, b, c = mrnd.quad_pol_by_rcount(t)
+    b = -b
+    c = -c
+
+    return "y=" + mtxt.fc(b) + "x" + mtxt.s(c) + " пересекает параболу y=" + mtxt.fc(a) + "x^2", \
+           ("0") if t == 0 else ("1" if t == 1 else "2")
+
+def reshi_graficheski_sistemu_uravnenij568():
+# Реши графически систему уравнений: {y = -3|x|; y = -x^2}
+    s1 = rnd.randint(0, 1)
+    s2 = rnd.randint(0, 1)
+
+    k = rnd.choice([1, 2, 3, 5])
+    m = rnd.choice([1, 2, 3, 5])
+    a = m * k
+
+    if s1 == s2:
+        answer = "0; " + str(m) + "; -" + str(m)
+    else:
+        answer = "0"
+
+    return "{y=" + mtxt.fc(a * (1 if s1 == 0 else -1)) + "|x|; y=" +  mtxt.fc(k * (1 if s2 == 0 else -1)) + "x^2}", answer
+
+def postroj_grafik_funktsii():
+# построй график функции: y = -2|x|
+    a = mrnd.rnd_w(-3, 3, [0])
+    return "y = " + mtxt.fc(a) + "|x|", "график"
+
+def reshi_graficheski_sistemu_uravnenij():
+# Реши графически систему уравнений: {y = 2x^2; y + 2x - 4 = 0}
+    x1 = mrnd.rnd_w0(-6, 6)
+    x2 = mrnd.rnd_w(-6, 6, [0, x1])
+
+    a = 1
+    b = -x1 - x2
+    c = x1 * x2
+
+    return "{y=x^2; y" + mtxt.fc(b, is_first=False) + "x" + mtxt.s(c) + "=0}", \
+        str(x1) + " и " + str(x2)
+
+
+def tochki_peresecheniya_kakih_grafikov_nuzhno_najti_chtobyi_graficheski_reshit_sistemu_uravnenij():
+# точку пересечения каких гафиков нужно найти, чтобы графически решить систему уравнений: {y = 2x^2; y + 2x - 4 = 0}
+    a = mrnd.rnd_w(-7, 7, [0])
+    b = mrnd.rnd_w(-7, 7, [0, a])
+
+    k = mrnd.rnd_w(-5, 5, [0])
+
+    return "{y=" + mtxt.fc(k) + "x^2; y" + mtxt.fc(-a, is_first=False) + "x" + mtxt.s(-b) + "=0}", \
+           "y=" + mtxt.fc(k) + "x^2 и y=" + mtxt.fc(a) + "x" + mtxt.s(b)
+
+def vyirazi_y_iz_uravneniya():
+# вырази y из уравнения: y + 2x - 4 = 0
+    a = mrnd.rnd_w(-7, 7, [0])
+    b = mrnd.rnd_w(-7, 7, [0, a])
+    return "y" + mtxt.fc(-a, is_first=False) + "x" + mtxt.s(-b) + "=0", "y=" + mtxt.fc(a) + "x" + mtxt.s(b)
+
+def reshi_graficheski_uravnenie():
+# Реши графически уравнение: 1/2*x^2 = 1/2*x + 2
+    x1 = mrnd.rnd_w0(-6, 6)
+    x2 = mrnd.rnd_w(-6, 6, [0, x1])
+
+    a = 1
+    b = -x1 - x2
+    c = x1 * x2
+
+    return "x^2 = " + mtxt.fc(x1 + x2) + "x" + ("+" if -c > 0 else "") + str(-c), str(x1) + " и " + str(x2)
+
+def tochku_peresecheniya_kakih_gafikov_nuzhno_najti_chtobyi_graficheski_reshit_uravnenie():
+# точку пересечения каких гафиков нужно найти, чтобы графически решить уравнение: 2x^2 = 2x - 2
+    a = mrnd.rnd_w(-6, 6, [0])
+    k = mrnd.rnd_w(-4, 4, [0])
+    b = mrnd.rnd_w(-7, 7, [0])
+    y1s = mtxt.fc(a) + "x^2"
+    y2s = mtxt.fc(k) + "x" + ("+" if b > 0 else "") + str(b)
+
+    return y1s + " = " + y2s, "y=" + y1s + " и " + "y=" + y2s
+
+def vozrastaet_ili_ubyivaet_funktsiya_na_otrezke():
+# Возрастает или убывает функция на отрезке: [1; 3], y = -2x^2
+    a = mrnd.rnd_w(-6, 6, [-1, 0, 1])
+    x1 = rnd.randint(-10, 5)
+    x2 = rnd.randint(x1 + 1, 10)
+
+    answer = ""
+    if x1 * x2 < 0:
+        answer = "на отрезке [" + str(x1) + "; 0] - " + ("убывает" if a > 0 else "возрастает") + \
+                 ", на отрезке [0; " + str(x2) + "] - " + ("возрастает" if a > 0 else "убывает")
+    else:
+        answer = ("убывает" if a > 0 else "возрастает") if x1 < 0 else ("убывает" if a < 0 else "возрастает")
+
+    return "[" + str(x1) + "; " + str(x2) + "], y=" + mtxt.fc(a) + "x^2", answer
+
+def najdite_koeffitsient_k_v_uravnenii_parabolyi_esli_izvestno_chto_parabola_prohodit_cherez_tochku():
+# Найдите коэффициент k в уравнении параблоы, если известно, что парабола проходит через точку: M(2; -8)
+    a = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    x = mrnd.rnd_w(-4, 4, [0])
+    y = a * pow(x, 2)
+    return "M(" + str(x) + "; " + str(y) + ")", str(a)
+
+def opredelite():
+# Определите: максимум | минимум функции на отрезке: [|)-1; 4]|), y = x^2
+    is_max = rnd.randint(0, 1)
+    a = mrnd.rnd_w(-5, 5, [-1, 0, 1])
+    x1 = rnd.randint(1, 7)
+    x2 = mrnd.rnd_w(-7, -1, [-x1])
+
+    answer = ""
+    if a > 0:
+        if is_max == 1:
+            answer = 0
+        else:
+            answer = a * pow(x1, 2) if x1 > -x2 else a * pow(x2, 2)
+    else:
+        if is_max == 0:
+            answer = 0
+        else:
+            answer = a * pow(x1, 2) if x1 > -x2 else a * pow(x2, 2)
+
+    return ("максимум" if is_max == 0 else "минимум") + " функции на отрезке " +\
+        rnd.choice(["(", "["]) + str(x2) + "; " + str(x1) + rnd.choice([")", "]"]) + ", y=" + mtxt.fc(a) + "x^2", \
+        str(answer)
+
+def v_kakoj_tochke_funktsiya_prinimaet():
+# в какой точке функция принимает: большее | меньшее значение, при x = 2 или при x = -3, y = -2x^2
+    b = rnd.randint(0, 1)
+    a = mrnd.rnd_w(-5, 5, [-1, 0, 1])
+    x1 = rnd.randint(1, 7)
+    x2 = mrnd.rnd_w(-7, -1, [-x1])
+
+    answer = ""
+    if b == 0:
+        answer = "при x=" + (str(x1) if a*pow(x1, 2) > a*pow(x2, 2) else str(x2))
+    else:
+        answer = "при x=" + (str(x1) if a * pow(x1, 2) < a * pow(x2, 2) else str(x2))
+
+    return ("большее" if b == 0 else "меньшее") + " значение, при x=" + str(x1) + " или при x=" + str(x2) + ", y=" + mtxt.fc(a) + "x^2", \
+           answer
+
+def opredelite_kakim_promezhutkam_prinadlezhit_argument_funktsii_esli_znacheniya_funktsii_nahodyatsya_v_diapazone():
+# Определите каким промежуткам принадлежит аргумент, если значения функции находятся в диапазоне: [4, 9], y = x^2
+    a = mrnd.rnd_w(-5, 5, [-1, 0, 1])
+
+    x1 = rnd.randint(1, 6)
+    x2 = rnd.randint(x1 + 1, 9)
+
+    if a > 0:
+        y1 = a * pow(x1, 2)
+        y2 = a * pow(x2, 2)
+    else:
+        y1 = a * pow(x2, 2)
+        y2 = a * pow(x1, 2)
+
+    return "[" + str(y1) + "; " + str(y2) + "], y=" + mtxt.fc(a) + "x^2", "[" + str(-x2) + "; " + str(-x1) + "]" + " и " + \
+        "[" + str(x1) + "; " + str(x2) + "]"
+
+def pri_kakih_znacheniyah_argumenta_funktsiya():
+# при каких значениях аргумента функция: y = -2x^2 принимает значение -8
+    a = mrnd.rnd_w(-8, 8, [-1, 0, 1])
+    x = rnd.randint(-7, 7)
+    y = a * pow(x, 2)
+    return "y=" + mtxt.fc(a) + "x^2 принимает значение " + str(y), str(x) + " и " + str(-x)
+
+def skolko_raznyih_znachenij_x_sootvetstvuet_znacheniyu():
+# сколько разных значений x соответствует значению: y = (+|-)3 для функции y = 2x^2
+    a = mrnd.rnd_w(-8, 8, [-1, 0, 1])
+    y = mrnd.rnd_w(-5, 5)
+    return "y=" + str(y) + " для функции y=" + mtxt.fc(a) + "x^2", (("2" if y > 0 else "0") if a!= 0 else "1") if a > 0 \
+        else (("2" if y < 0 else "0") if a!= 0 else "1")
+
+def grafik_kakoj_funktsii():
+# График какой функции выше | ниже в точке: x = 2, y1=3x^2 или y2=-2x^2
+    v = rnd.randint(0, 1)
+    a1 = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    a2 = mrnd.rnd_w(-7, 7, [-1, 0, 1, a1])
+    x = rnd.randint(-6, 6)
+    y1s = "y=" + mtxt.fc(a1) + "x^2"
+    y2s = "y=" + mtxt.fc(a2) + "x^2"
+
+    if x == 0:
+        answer = "одинаковое значение"
+    else:
+        answer = (y1s if a1 > a2 else y2s) if v == 0 else (y1s if a1 < a2 else y2s)
+
+    return ("выше" if v == 0 else "ниже") + " в точке x=" + str(x) + ": " + y1s + " или " + y2s, answer
+
+def postrojte_grafik_funktsii():
+# Постройте график функции: y = (+|-)3x^2
+    a = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    return "y = " + mtxt.fc(a) + "x^2", "график"
+
+def prinadlezhit_li_grafiku_funktsii():
+# принадлежит ли графику функции: y = -3x^2 точка (-2; -8)
+    a = mrnd.rnd_w(-7, 7, [-1, 0, 1])
+    p = rnd.randint(0, 1)
+    x = rnd.randint(-10, 10)
+
+    y = a * pow(x, 2)
+    if p == 1:
+        if rnd.randint(0, 1) == 0:
+            y += (1 if rnd.randint(0, 1) == 0 else -1) * rnd.randint(1, 3)
+        else:
+            y = -y
+
+    return "y = " + mtxt.fc(a) + "x^2 точка " + mtxt._(str(x) + "; " + str(y)), "принадлежит" if p == 0 else "не принадлежит"
+
+def postroj_po_tochkam_grafik_funktsii551():
+# построй по точкам график функции: y = -2x^2
+    a = rnd.randint(2, 7)
+    return "y = -" + mtxt.fc(a) + "x^2", "график"
+
+def postroj_po_tochkam_grafik_funktsii():
+# построй по точкам график функции: y = 3x^2
+    a = rnd.randint(2, 7)
+    return "y = " + mtxt.fc(a) + "x^2", "график"
+
+def chemu_ravno549():
+# чему равно: 2x^2, если x = -3
+    a = rnd.randint(2, 7)
+    sx = rnd.randint(0, 1)
+    sa = rnd.randint(0, 1)
+    x = rnd.randint(1, 5)
+    return mtxt.fc(a * (-1 if sa == 1 else 1)) + "x^2, если x = " + ("" if sx == 0 else "-") + str(x), str((-1 if sa == 1 else 1) * a * pow(x, 2))
+
+
+def reshi_neravenstvo548():
+# Реши неравенство: 3/(2^x-1) - 2/(2^x-2) <= 0
+    n = rnd.choice([2, 3, 5, 7])
+    s = rnd.randint(0, 1)
+
+    n1 = rnd.randint(1, 7)
+    k1 = rnd.randint(1, 3)
+    m1 = mrnd.rnd_w(2, 5, [k1])
+
+    n2 = mrnd.rnd_w(1, 7, [n1])
+    k2 = mrnd.rnd_w(1, 3, [k1])
+    while n1 * k2 + (1 if s == 0 else -1) * k1 * n2 == 0:
+        k2 = mrnd.rnd_w(1, 3, [k1])
+    m2 = mrnd.rnd_w(2, 5, [k2])
+    while m1 * k2 == m2 * k1:
+        m2 = mrnd.rnd_w(2, 5, [k2])
+
+    lr = rnd.randint(0, 1)
+
+    s1 = n1 * k2 + (1 if s == 0 else -1) * k1 * n2
+
+    t1n, t1d = mf.s_fraction((n1 * m2 + (1 if s == 0 else -1) * n2 * m1, s1))
+    t2n, t2d = mf.s_fraction((m1, k1))
+    t3n, t3d = mf.s_fraction((m2, k2))
+
+    ts = [(t1n, t1d), (t2n, t2d), (t3n, t3d)]
+    ts.sort(key=lambda x: x[0] / x[1])
+
+    def sk(t, ind):
+        if ind == ts.index((t1n, t1d)) + 1:
+            return "[" if t == 0 else "]"
+        else:
+            return "(" if t == 0 else ")"
+
+    def l(ti):
+        if ts[ti-1][1] != ts[ti-1][0]:
+            p = mf.get_power_of(ts[ti-1][0]/ts[ti-1][0], n)
+            if p == -1:
+                return mtxt.log_text(n, mtxt.f_t(ts[ti-1][0], ts[ti-1][1]))
+            else:
+                return str(p)
+        else:
+            return "0"
+
+    t1 = ts[0][0] / ts[0][1]
+
+    slr = lr if s1 > 0 else 1 - lr
+    if slr == 0:
+        if t1 > 0:
+            answer = sk(0, 1) + l(1) + "; " + l(2) + sk(1, 2) + " и " + sk(0, 3) + l(3) + "; +бесконечность)"
+        else:
+            if ts[1][0] != ts[1][1]:
+                answer = "(-бесконечность; " + l(2) + sk(1, 2) + " и " + sk(0, 3) + l(3) + "; +бесконечность)"
+            else:
+                answer = sk(0, 3) + l(3) + "; +бесконечность)"
+    else:
+        if t1 > 0:
+            if ts[1][0] != ts[1][1]:
+                answer = "(-бесконечность; " + l(1) + sk(1, 1) + " и " + sk(0, 2) + l(2) + "; " + l(3) + sk(1, 3)
+            else:
+                answer = sk(0, 2) + l(2) + "; " + l(3) + sk(1, 3)
+        else:
+            answer = sk(0, 2) + l(2) + "; " + l(3) + sk(1, 3)
+
+    return str(n1) + "/" + mtxt._(mtxt.fc(k1) + ("*" if k1 != 1 else "") + mtxt.pow_text(str(n), "x") + "-" + str(m1)) + mtxt.p0m1(s) + \
+           str(n2) + "/" + mtxt._(mtxt.fc(k2) + ("*" if k2 != 1 else "") + mtxt.pow_text(str(n), "x") + "-" + str(m2)) + " " + (">=" if lr == 0 else "<=") + " 0", \
+           answer
+
+
+def reshi_neravenstvo547():
+# реши неравенство: 3/(2t-1) - 2/(t-2) <= 0
+    s = rnd.randint(0, 1)
+
+    n1 = rnd.randint(1, 7)
+    k1 = rnd.randint(1, 3)
+    m1 = mrnd.rnd_w(2, 5, [k1])
+
+    n2 = mrnd.rnd_w(1, 7, [n1])
+    k2 = mrnd.rnd_w(1, 3, [k1])
+    while n1 * k2 + (1 if s == 0 else -1) * k1 * n2 == 0:
+        k2 = mrnd.rnd_w(1, 3, [k1])
+    m2 = mrnd.rnd_w(2, 5, [k2])
+    while m1 * k2 == m2 * k1:
+        m2 = mrnd.rnd_w(2, 5, [k2])
+
+    lr = rnd.randint(0, 1)
+
+    t1n, t1d = mf.s_fraction((n1 * m2 + (1 if s == 0 else -1) * n2 * m1, n1 * k2 + (1 if s == 0 else -1) * k1 * n2))
+    t2n, t2d = mf.s_fraction((m1, k1))
+    t3n, t3d = mf.s_fraction((m2, k2))
+
+    ts = [(t1n, t1d), (t2n, t2d), (t3n, t3d)]
+    ts.sort(key = lambda x: x[0]/x[1])
+
+    def sk(t, ind):
+        if ind == ts.index((t1n, t1d)) + 1:
+            return "[" if t == 0 else "]"
+        else:
+            return "(" if t == 0 else ")"
+
+    if lr == 0:
+        answer = sk(0, 1) + mtxt.f_t(ts[0][0], ts[0][1]) + "; " + mtxt.f_t(ts[1][0], ts[1][1]) + sk(1, 2) + " и " + \
+            sk(0, 3) + mtxt.f_t(ts[2][0], ts[2][1]) + "; +бесконечность)"
+    else:
+        answer = "(-бесконечность; " + mtxt.f_t(ts[0][0], ts[0][1]) + sk(1, 1) + " и " + sk(0, 2) + mtxt.f_t(ts[1][0], \
+            ts[1][1]) + "; " + mtxt.f_t(ts[2][0], ts[2][1]) + sk(1, 3)
+
+    return str(n1) + "/" + mtxt._(mtxt.fc(k1) + "t" + "-" + str(m1)) + mtxt.p0m1(s) + \
+           str(n2) + "/" + mtxt._(mtxt.fc(k2) + "t" + "-" + str(m2)) + " " + (">=" if lr == 0 else "<=") + " 0", \
+           answer
+
+
+def reshi_neravenstvo546():
+# Решите неравенство: log3->(log2->x) < 1
+    n1 = rnd.choice([2, 3, 5, 7])
+    n2 = mrnd.choice_w([2, 3, 5, 7], [n1])
+
+    lr = rnd.randint(0, 1)
+    a = rnd.choice([-2, -1, 1, 2])
+
+    return mtxt.log_text(n1, mtxt._(mtxt.log_text(n2, "x"))) + " " + (">" if lr == 0 else "<") + " " + str(a), \
+           "x " + (">" if lr == 0 else "<") + " " + mtxt.pow_text(n2, mtxt._(pow(n1, a) if a > 0 else ("1/" + str(pow(n1, -a)))))
+
+
+def reshi_neravenstvo545():
+# Решите неравенство: (log2->x)^2 - 6log5->x*log9->x > 0
+    n = rnd.choice([2, 3, 5, 7])
+    lr = rnd.randint(0, 1)
+
+    k1 = rnd.randint(2, 4)
+    k2 = mrnd.rnd_w(2, 4, [k1])
+
+    fpol = rnd.randint(0, 1)
+    a = rnd.randint(1, 3)
+    b = a * k1 * k2
+
+    if fpol == 1:
+        osn1 = str(pow(n, k1) - rnd.randint(1, 2))
+        osn2 = str(pow(n, k2) - rnd.randint(1, 2))
+    else:
+        osn1 = str(pow(n, k1) + rnd.randint(1, 2))
+        osn2 = str(pow(n, k2) + rnd.randint(1, 2))
+
+    answer = "(0; +бесконечность)\{1}" if fpol == lr else "нет решений"
+
+    return mtxt.fc(a) + mtxt.pow_text(mtxt._(mtxt.log_text(n, "x")), 2) + " - " + \
+           mtxt.fc(b) + " * " + mtxt.log_text(osn1, "x") + " * " + mtxt.log_text(osn2, "x") + " " + (">" if lr == 0 else "<") + " 0", \
+           answer
+
+def reshite_neravenstvo544():
+# решите неравенство: log2->x < | > 0
+    n = rnd.choice([2, 3, 5, 7])
+    lr = rnd.randint(0, 1)
+    return mtxt.log_text(n, "x") + " " + (">" if lr == 0 else "<") + " 0", "x " + (">" if lr == 0 else "<") + " 1"
+
+def chto_bolshe543():
+# что больше: 6 или log2->5 * log2->9
+    n = rnd.choice([3, 5])
+    lr = rnd.randint(0, 1)
+
+    k1 = rnd.randint(2, 4)
+    k2 = mrnd.rnd_w(2, 4, [k1])
+
+    if lr == 0:
+        x1s = str(pow(n, k1) - rnd.randint(1, 2))
+        x2s = str(pow(n, k2) - rnd.randint(1, 2))
+    else:
+        x1s = str(pow(n, k1) + rnd.randint(1, 2))
+        x2s = str(pow(n, k2) + rnd.randint(1, 2))
+
+    exp = mtxt.log_text(n, x1s) + " * " + mtxt.log_text(n, x2s)
+
+    return str(k1 * k2) + " или " + exp, (str(k1 * k2) if lr == 0 else exp) + " больше"
+
+def reshi_neravenstvo542():
+# Реши неравенство: log1/7->(x^2-4x-5) >= -1
+    n = rnd.choice([2, 3, 5, 7])
+    k = rnd.choice([-2, -1])
+    lr = rnd.randint(0, 1)
+
+    x1 = (mrnd.rnd_w(-4, 4, [0]), rnd.randint(1, 5))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(1, 5, [x1[0]]))
+
+    if x1[0] / x1[1] > x2[0] / x2[1]:
+        t = x1
+        x1 = x2
+        x2 = t
+
+    a = x1[1] * x2[1]
+    b = -x1[0] * x2[1] - x1[1] * x2[0]
+    c = x1[0] * x2[0] + pow(n, -k)
+
+    px = pol.Polynomial([a, b, c], [2, 1, 0])
+
+    x1n, x1d = mf.s_fraction(x1)
+    x2n, x2d = mf.s_fraction(x2)
+
+    answer = ""
+    if a > 0 and lr == 0:
+        answer = "[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]"
+    else:
+        answer = "(-бесконечность; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +бесконечность)"
+
+    return mtxt.log_text("1/" + str(n), mtxt._(px.get_str())) + (" >= " if lr == 0 else " <= ") + str(k), \
+           answer
+
+def reshite_neravenstvo():
+# решите неравенство: log1/7->t >= -1
+    n = rnd.choice([2, 3, 5, 7])
+    a = rnd.choice([-2, -1, 1, 2])
+    lr = rnd.randint(0, 1)
+    return mtxt.log_text(mtxt.f_t(1, n), "t") + (" >= " if lr == 0 else " <= ") + str(a), \
+           "t" + (" <= " if lr == 0 else " >= ") + ((mtxt.f_t(1, pow(n, a))) if a > 0 else (str(pow(n, -a))))
+
+def reshi_neravenstvo539():
+# Реши неравенство: 9^(x-1) + 3^(5-2x) <= 28
+    n = rnd.randint(2, 5)
+    lr = rnd.randint(0, 1)
+
+    k1 = rnd.randint(0, 3)
+    k2 = rnd.randint(0, 3)
+
+    t1 = (pow(n, k1), 1)
+    t2 = (1, pow(n, k2))
+
+    a = t1[1] * t2[1]
+    b = -t1[0] * t2[1] - t1[1] * t2[0]
+    c = t1[0] * t2[0]
+
+    k = mrnd.rnd_w(-5, 5, [0])
+
+    s = str(k1 - 2 * k) + "-" + "2x"
+
+    x1n, x1d = mf.s_fraction((k1 - 2*k, 2))
+    x2n, x2d = mf.s_fraction((-k2 - 2*k, 2))
+
+    if x1n/x1d > x2n/x2d:
+        x1n, x2n = x2n, x1n
+        x1d, x2d = x2d, x1d
+
+    answer = ("(-бесконечность; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +бесконечность)") if lr == 0 else ("[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]")
+
+    return mtxt.fc(a) + ("*" if a != 1 else "") + mtxt.pow_text(pow(n, 2), mtxt._("x" + ("+" if k > 0 else "") + str(k))) + \
+           " + " + mtxt.pow_text(n, mtxt._(s)) + (" >= " if lr == 0 else " <= ") + str(-b), \
+            answer
+
+def reshi_neravenstvo538():
+# Реши неравенство:(1/2)^(2x^2+3x-6) < 2
+    n = rnd.randint(2, 5)
+    obr = rnd.randint(0, 1)
+    lr = rnd.randint(0, 1)
+    k = rnd.randint(1, 3)
+
+    x1 = (mrnd.rnd_w(-4, 4, [0]), rnd.randint(1, 5))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(1, 5, [x1[0]]))
+
+    if x1[0] / x1[1] > x2[0] / x2[1]:
+        t = x1
+        x1 = x2
+        x2 = t
+
+    a = x1[1] * x2[1]
+    b = -x1[0] * x2[1] - x1[1] * x2[0]
+    c = x1[0] * x2[0]
+
+    if obr == 0:
+        alr = 1 - lr
+        c -= k
+    else:
+        alr = lr
+        c += k
+
+    px = pol.Polynomial([a, b, c], [2, 1, 0])
+
+    x1n, x1d = mf.s_fraction(x1)
+    x2n, x2d = mf.s_fraction(x2)
+
+    return mtxt.pow_text(str(n) if obr == 1 else mtxt._("1/" + str(n)), mtxt._(px.get_str())) + (" > " if lr == 0 else " < ") + str(pow(n, k)),\
+        ("(-бесконечность; " + mtxt.f_t(x1n, x1d) + "), (" + mtxt.f_t(x2n, x2d) + "; +бесконечность)" ) if alr == 0 else \
+               ("(" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + ")")
+
+
+def reshi_neravenstvo537():
+# реши неравенство: 2x^2 + 3x - 5 > 0
+    lr = rnd.randint(0, 1)
+
+    x1 = (mrnd.rnd_w(-4, 4, [0]), rnd.randint(1, 5))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(1, 5, [x1[0]]))
+
+    if x1[0]/x1[1] > x2[0]/x2[1]:
+        t = x1
+        x1 = x2
+        x2 = t
+
+    a = x1[1] * x2[1]
+    b = -x1[0] * x2[1] - x1[1] * x2[0]
+    c = x1[0] * x2[0]
+
+    px = pol.Polynomial([a, b, c], [2, 1, 0])
+
+    x1n, x1d = mf.s_fraction(x1)
+    x2n, x2d = mf.s_fraction(x2)
+
+    return px.get_str() + (" > " if lr == 0 else " < ") + "0", \
+           ("(-бесконечность; " + mtxt.f_t(x1n, x1d) + "), (" + mtxt.f_t(x2n, x2d) + "; +бесконечность)" ) if lr == 0 else \
+               ("(" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + ")")
+
+
+def narisuj_grafik_funktsii():
+# Нарисуй график функции: y = loga->x, если a = (3 | 1/3)
+    obr = rnd.randint(0, 1)
+    n = rnd.randint(2, 9)
+    osn = ("1/" + str(n)) if obr == 0 else str(n)
+    return "y = " + mtxt.log_text(osn, "x"), "график"
+
+def verno_li_utverzhdenie536():
+# верно ли утверждение:
+# функция y = loga->x (пересекает | не пересекает) ось (x|y) в точке (0|1|a);
+# функция y = loga->x в точке x = a (равна | не равна) (0|1);
+# функция y = loga->x (возрастает|убывает) на отрезку (4 отрезка)
+    t = rnd.randint(1, 3)
+
+    obr = rnd.randint(0, 1)
+    n = rnd.randint(2, 9)
+    osn = ("1/" + str(n)) if obr == 0 else str(n)
+
+    text = ""
+    answer = ""
+    if t == 1:
+        p = rnd.randint(0, 1)
+        os_x = rnd.randint(0, 1)
+        tt = rnd.randint(1, 3)
+
+        text = "функция y = " + mtxt.log_text(osn, "x") + \
+               (" пересекает " if p == 0 else " не пересекает ") + "ось " + ("x" if os_x == 0 else "y") + \
+                " в точке " + ("0" if tt == 0 else ("1" if tt == 1 else osn))
+        if os_x == 0:
+            if tt == 1:
+                answer = "верно" if p == 0 else "не верно"
+            else:
+                answer = "верно" if p == 1 else "не верно"
+        else:
+            answer = "верно" if p == 1 else "не верно"
+    if t == 2:
+        r = rnd.randint(0, 1)
+        z = rnd.randint(0, 1)
+        text = "функция y = " + mtxt.log_text(osn, "x") + " в точке x = " + osn + (" равна" if r == 0 else " не равна") + \
+               (" 0" if z == 0 else " 1")
+        answer = ("верно" if z == 1 else "не верно") if r == 0 else ("верно" if z == 0 else "не верно")
+    if t == 3:
+        v = rnd.randint(0, 1)
+        ot = rnd.randint(1, 4)
+        ots = ""
+        if ot == 1:
+            ots = "(-бесконечность; -1)"
+        if ot == 2:
+            ots = "(-1; 0)"
+        if ot == 3:
+            ots = "(0; 1)"
+        if ot == 4:
+            ots = "(1; +бесконечность)"
+        text = "функция y = " + mtxt.log_text(osn, "x") + " " + ("возрастает" if v == 0 else "убывает") + \
+            " на отрезке " + ots
+
+        if ot in [1, 2]:
+            answer = "не верно"
+        else:
+            if v == 0:
+                answer = "верно" if obr == 1 else "не верно"
+            else:
+                answer = "верно" if obr == 0 else "не верно"
+
+    return text, answer
+
+def ubyivaet_ili_vozrastaet_funktsiya_y_ravno_logaminus_x_esli():
+# убывает или возрастает функция y = loga->x если: a = 3 | 1/3
+    n = rnd.randint(2, 9)
+    obr = rnd.randint(0, 1)
+    return "y = " + mtxt.log_text(("1/" + str(n) if obr == 0 else str(n)), "x"), "убывает" if obr == 0 else "возрастает"
+
+
+def reshi_neravenstvo533():
+# Решите неравенство: 5logk(3)->x - 4log3->x + 4log9->x <= 8
+    n = rnd.choice([2, 3, 5, 7])
+
+    b1 = mrnd.rnd_w(-5, 5, [0, -1, 1])
+    b2 = mrnd.rnd_w(-5, 5, [0, -1, 1])
+    b3 = 2 * mrnd.rnd_w(-3, 3, [0])
+    b = 2 * b1 + b2 + int(b3/2)
+    while b == 0:
+        b1 = mrnd.rnd_w(-5, 5, [0, -1, 1])
+        b2 = mrnd.rnd_w(-5, 5, [0, -1, 1])
+        b3 = 2 * mrnd.rnd_w(-3, 3, [0])
+        b = 2 * b1 + b2 + int(b3/2)
+
+
+    lr = rnd.randint(0, 1)
+
+    answer = "x" + ((" >= " if b > 0 else " <= ") if lr == 0 else (" <= " if b > 0 else " >= ")) + str(n)
+
+    return mtxt.fc(b1) + "*" + mtxt.log_text(mtxt.k_t(n), "x") + mtxt.p0m1(0 if b2 > 0 else 1) + \
+           mtxt.fc(int(math.fabs(b2))) + "*" + mtxt.log_text(n, "x") + mtxt.p0m1(0 if b3 > 0 else 1) + \
+           mtxt.fc(int(math.fabs(b3))) + "*" + mtxt.log_text(str(pow(n, 2)), "x") + (" >= " if lr == 0 else " <= ") + str(b), \
+           answer
+
+def reshi_neravenstvo532():
+# реши неравенство: log3->x <= 2
+    n = rnd.choice([2, 3, 5, 7])
+    b = rnd.choice([-2, -1, 1, 2])
+    lr = rnd.randint(0, 1)
+    obr = rnd.randint(0, 1)
+
+    mb = int(math.fabs(b))
+    if obr == 1:
+        answer = "x " + (" >= " if lr == 0 else " <= ") + ("1/" + str(pow(n, mb)) if b < 0 else str(pow(n, b)))
+    else:
+        tb = -b
+        answer = "x " + (" <= " if lr == 0 else " >= ") + (("1/" + str(pow(n, mb))) if tb < 0 else str(pow(n, tb)))
+
+    return mtxt.log_text(("" if obr == 1 else "1/") + str(n), "x") + (" >= " if lr == 0 else " <= ") + str(b), \
+           answer
+
+def najdi():
+    kb = rnd.randint(0, 4)
+    s = rnd.randint(0, 1)
+    if kb == 0:
+        n = rnd.randint(1, 7)
+        k = pow(n, 2) + rnd.randint(1, 7)
+    else:
+        n = rnd.randint(3, 7)
+        k = pow(n, 2) - rnd.randint(1, 7)
+
+    exp = str(n) + mtxt.p0m1(s) + mtxt.k_t(k)
+    expm = mtxt.k_t(k) + " - " + str(n)
+
+    return mtxt.mod(exp), exp if (s == 0 or (s == 1 and kb == 1)) else expm
+
+def modul_chisla_minus_eto_rasstoyanie_ot_chisla_do_0_najdi_modul_chisla():
+    if rnd.choice([0, 0, 1, 0]) == 0:
+        n = rnd.randint(-9, -1)
+    else:
+        n = rnd.randint(1, 9)
+    return str(n), str(int(math.fabs(n)))
+
+def najdi_rasstoyanie_ot_nulya_do_chisla_esli_polozhitelnoe_to_samo_chislo_esli_otritsatelnoe_to_domnozhit_na_minus1():
+    if rnd.choice([0, 0, 1]) == 0:
+        n = rnd.randint(-9, -1)
+    else:
+        n = rnd.randint(1, 9)
+    return str(n), str(int(math.fabs(n)))
+
+def chislo_bolshe_nulya_ili_menshe():
+    kb = rnd.randint(0, 1)
+    s = rnd.randint(0, 1)
+    if kb == 0:
+        n = rnd.randint(1, 7)
+        k = pow(n, 2) + rnd.randint(1, 7)
+    else:
+        n = rnd.randint(3, 7)
+        k = pow(n, 2) - rnd.randint(1, 7)
+
+    return str(n) + mtxt.p0m1(s) + mtxt.k_t(k), "больше нуля" if (s == 0 or (s == 1 and kb == 1)) else "меньше нуля"
+
+def umnozh_chislo_na_minus1():
+    n = rnd.randint(1, 9)
+    s = rnd.randint(0, 1)
+    return ("" if s == 0 else "-") + str(n), ("-" + str(n)) if s == 0 else str(n)
+
+def chemu_ravno():
+    n = rnd.randint(1, 9)
+    s = rnd.randint(0, 1)
+    return "-" + mtxt._(("" if s == 0 else "-") + str(n)), ("-" + str(n)) if s == 0 else str(n)
+
+def predstavte_v_vide():
+# Представьте в виде: квадрата|куба одночлена a^6 * b^12
+    kv_kb = rnd.randint(0, 1)
+    a_base = rnd.randint(1, 7)
+    b_base = mrnd.rnd_w(1, 7, [a_base])
+    return ("квадрата" if kv_kb == 0 else "куба") + " " + mtxt.pow_text("a", (2 if kv_kb == 0 else 3) * a_base) + "*" + mtxt.pow_text("b", (2 if kv_kb == 0 else 3) * b_base) \
+        , mtxt.pow_text(mtxt._(mtxt.pow_text("a", a_base) + "*" +  mtxt.pow_text("b", b_base)), (2 if kv_kb == 0 else 3))
+
+
+def umnozh_odnochlenyi():
+    ps = []
+    for i in range(0, 3):
+        psi = []
+        for j in range(0, 3):
+            psi.append(mrnd.rnd_w(1, 7, psi))
+        ps.append(psi)
+
+    text = ""
+    for o in ps:
+        text += mtxt.pow_text("a", o[0]) + "*" + mtxt.pow_text("b", o[1]) + "*" + mtxt.pow_text("c", o[2])
+        if ps.index(o) != len(ps) - 1:
+            text += ", "
+
+    return text, mtxt.pow_text("a", ps[0][0] + ps[1][0] + ps[2][0]) + "*" + mtxt.pow_text("b", ps[0][1] + ps[1][1] + ps[2][1]) + "*" + mtxt.pow_text("c", ps[0][2] + ps[1][2] + ps[2][2])
+
+
+def vozvedi_odnochlen_v_kvadrat():
+# Возведи одночелн в квадрат: a^2*b^3*с
+    a = rnd.randint(1, 7)
+    b = mrnd.rnd_w(1, 7, [a])
+    c = mrnd.rnd_w(1, 7, [a, b])
+    return mtxt.pow_text("a", a) + "*" + mtxt.pow_text("b", b) + "*" + mtxt.pow_text("c", c), \
+           mtxt.pow_text("a", 2*a) + "*" + mtxt.pow_text("b", 2*b) + "*" + mtxt.pow_text("c", 2*c)
+
+def najdite_znachenie_vyirazheniya__aplusb_():
+# Найдите значение выражения |a+b|: если a=2k(7)-5, b=k(7)-3
+    n2 = mrnd.rnd_w(3, 10, [4, 9])
+    kb = rnd.randint(0, 1)
+    if kb == 0:
+        n1 = rnd.choice([2, 3, 5])
+        d = math.floor(n2 / math.sqrt(n1))
+        f = max([2, rnd.randint(d + 1, d + 7)])
+    else:
+        f = rnd.randint(2, 4)
+        n1 = rnd.randint(math.floor(f * math.sqrt(n2)) + 1, math.floor(f * math.sqrt(n2)) + 7)
+
+    n11 = rnd.randint(1, n1 - 1)
+    n12 = n1 - n11
+
+    f1 = rnd.randint(1, f - 1)
+    f2 = f - f1
+
+    a = str(n11) + " - " + mtxt.fc(f1) + mtxt.k_t(n2)
+    b = str(n12) + " - " + mtxt.fc(f2) + mtxt.k_t(n2)
+
+    if kb == 0:
+        answer = mtxt.fc(f) + mtxt.k_t(n2) + " - " + str(n1)
+    else:
+        answer = str(n1) + " - " + mtxt.fc(f) + mtxt.k_t(n2)
+
+    return "a = " + a + ", b = " + b, answer
+
+def chemu_ravnyaetsya523():
+# чему равняется |2k(7)-5 + (k(7) - 3)|
+    n2 = rnd.randint(3, 10)
+    kb = rnd.randint(0, 1)
+    if kb == 0:
+        n1 = rnd.choice([2, 3, 5])
+        d = math.floor(n2 / math.sqrt(n1))
+        f = max([2, rnd.randint(d + 1, d + 7)])
+    else:
+        f = rnd.randint(2, 4)
+        n1 = rnd.randint(math.floor(f * math.sqrt(n2)) + 1, math.floor(f * math.sqrt(n2)) + 7)
+
+    n11 = rnd.randint(1, n1 - 1)
+    n12 = n1 - n11
+
+    f1 = rnd.randint(1, f - 1)
+    f2 = f - f1
+
+    a = str(n11) + " - " + mtxt.fc(f1) + mtxt.k_t(n2)
+    b = str(n12) + " - " + mtxt.fc(f2) + mtxt.k_t(n2)
+
+    if kb == 0:
+        answer = mtxt.fc(f) + mtxt.k_t(n2) + " - " + str(n1)
+    else:
+        answer = str(n1) + " - " + mtxt.fc(f) + mtxt.k_t(n2)
+
+    return mtxt.mod(a + " + " +b), answer
+
+def najdi_znachenie_vyirazheniya__aminusb_():
+# Найдите значение выражения |a-b|: если a=2k(3)-3, b=2-k(3)
+    n2 = mrnd.rnd_w(3, 10, [4, 9])
+    kb = rnd.randint(0, 1)
+    if kb == 0:
+        n1 = rnd.choice([2, 3, 5])
+        d = math.floor(n2 / math.sqrt(n1))
+        f = max([2, rnd.randint(d + 1, d + 7)])
+    else:
+        f = rnd.randint(2, 4)
+        n1 = rnd.randint(math.floor(f * math.sqrt(n2)) + 1, math.floor(f * math.sqrt(n2)) + 7)
+
+    n11 = rnd.randint(1, n1 - 1)
+    n12 = n1 - n11
+
+    f1 = rnd.randint(1, f - 1)
+    f2 = f - f1
+
+    a = mtxt.fc(f1) + mtxt.k_t(n2) + " - " + str(n11)
+    b = str(n12) + " - " + mtxt.fc(f2) + mtxt.k_t(n2)
+
+    if kb == 0:
+        answer = mtxt.fc(f) + mtxt.k_t(n2) + " - " + str(n1)
+    else:
+        answer = str(n1) + " - " + mtxt.fc(f) + mtxt.k_t(n2)
+
+    return "a = " + a + ", b = " + b, answer
+
+def chemu_ravnyaetsya519():
+# чему равняется: |2k(3) - 3 - (2 - k(3))|
+    n2 = rnd.randint(3, 10)
+    kb = rnd.randint(0, 1)
+    if kb == 0:
+        n1 = rnd.choice([2, 3, 5])
+        d = math.floor(n2 / math.sqrt(n1))
+        f = max([2, rnd.randint(d + 1, d + 7)])
+    else:
+        f = rnd.randint(2, 4)
+        n1 = rnd.randint(math.floor(f * math.sqrt(n2)) + 1, math.floor(f * math.sqrt(n2)) + 7)
+
+    n11 = rnd.randint(1, n1 - 1)
+    n12 = n1 - n11
+
+    f1 = rnd.randint(1, f - 1)
+    f2 = f - f1
+
+    a = mtxt.fc(f1) + mtxt.k_t(n2) + " - " + str(n11)
+    b = str(n12) + " - " + mtxt.fc(f2) + mtxt.k_t(n2)
+
+    if kb == 0:
+        answer = mtxt.fc(f) + mtxt.k_t(n2) + " - " + str(n1)
+    else:
+        answer = str(n1) + " - " + mtxt.fc(f) + mtxt.k_t(n2)
+
+    return mtxt.mod(a + " - " + mtxt._(b)), answer
+
+def chemu_ravnyaetsya518():
+# чему равняется: |2 +- k(5)|
+    n1 = rnd.randint(2, 9)
+    kb = rnd.randint(0, 1)
+    if kb == 0:
+        n2 = rnd.randint(pow(n1, 2) + 1, pow(n1, 2) + 7)
+    else:
+        n2 = rnd.randint(2, pow(n1, 2) - 1)
+    s = rnd.randint(0, 1)
+
+    exp = str(n1) + mtxt.p0m1(s) + mtxt.k_t(n2)
+    if s == 1 and kb == 0:
+        answer = mtxt.k_t(n2) + " - " + str(n1)
+    else:
+        answer = exp
+
+    return mtxt.mod(exp), answer
+
+def chemu_ravnyaetsya517():
+# чему равняется: |k(3)|-k(3)|
+    n = rnd.randint(1, 9)
+    return mtxt.mod(("" if rnd.randint(0, 1) == 0 else "-") + mtxt.k_t(n)), mtxt.k_t(n)
+
+def chemu_ravnyaetsya():
+# чему равняется: |-3|3|
+    n = rnd.randint(1, 9)
+    return mtxt.mod(("" if rnd.randint(0, 1) == 0 else "-") + str(n)), str(n)
+
+def reshi_neravenstvo515():
+# Реши неравенство: 81*2^x - 16*3^x < 0
+    n1 = rnd.choice([2, 3, 5])
+    n2 = mrnd.choice_w([2, 3, 5], [n1])
+    k = rnd.randint(2, 4)
+    lr = rnd.randint(0, 1)
+    obr = rnd.randint(0, 1)
+
+    ms = (">" if n1 > n2 else "<") if lr == 0 else ("<" if n1 > n2 else ">")
+
+    return mtxt.fc(pow((n2 if obr == 1 else n1), k)) + "*" + mtxt.pow_text(n1, "x") + " - " + mtxt.fc(pow((n1 if obr == 1 else n2), k)) + "*" + mtxt.pow_text(n2, "x") + (" > " if lr == 0 else " < " ) + "0", \
+           "x" + " " + ms + " " + ("" if obr == 1 else "-") + str(k)
+
+def reshi_neravenstvo514():
+# Реши неравенство: 3^(2x+1) - 9^x < 2/3
+    n, a = mrnd.common_base_power()
+    k = rnd.randint(2, 3)
+    lr = rnd.randint(0, 1)
+    s = rnd.randint(0, 1)
+    return mtxt.pow_text(n, mtxt._(str(k) + "x+" + str(a))) + mtxt.p0m1(s) + mtxt.pow_text(pow(n, k), "x") + \
+           (" > " if lr == 0 else " < ") + mtxt.f_t((pow(n, a) + 1 if s == 0 else pow(n, a) - 1), n), \
+            ("x > " + "-1/" + str(k)) if lr == 0 else ("x < " + "-1/" + str(k))
+
+def reshi_neravenstvo513():
+# реши неравенство: 3^(2x) < 1/3
+    n = rnd.randint(2, 7)
+    k = mrnd.rnd_w(2, 7, [n])
+    lr = rnd.randint(0, 1)
+    return mtxt.pow_text(n, mtxt._(str(k) + "x")) + (" > " if lr == 0 else " < ") + "1/" + str(n), \
+           ("x > " + "-1/" + str(k)) if lr == 0 else ("x < " + "-1/" + str(k))
+
+def reshi_uravnenie512():
+# Реши уравнение: 9^x - 5*3^x + 6 = 0
+    x1 = (mrnd.rnd_w(-4, 4, [0]), rnd.randint(1, 5))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(1, 5, [x1[0]]))
+    a = x1[1] * x2[1]
+    b = -x1[0] * x2[1] - x1[1] * x2[0]
+    c = x1[0] * x2[0]
+
+    n = rnd.randint(2, 5)
+
+    def get_answer(n, rn, rd):
+        if rn == rd:
+            return "0"
+        tn, td = mf.s_fraction((rn, rd))
+
+        if mf.if_power_of(tn / td, n):
+            return str(int((tn / td) // n))
+        if mf.if_power_of(n, tn / td):
+            return str(int(n // (tn / td)))
+        return mtxt.log_text(n, mtxt.f_t(tn, td))
+
+    if x1[0] < 0 and x2[0] < 0:
+        answer = "нет решений"
+    if x1[0] > 0 and x2[0] > 0:
+        answer = get_answer(n, x1[0], x1[1]) + " и " + get_answer(n, x2[0], x2[1])
+    if x1[0] > 0 and x2[0] < 0:
+        answer = get_answer(n, x1[0], x1[1])
+    if x1[0] < 0 and x2[0] > 0:
+        answer = get_answer(n, x2[0], x2[1])
+
+    return mtxt.fc(a) + "*" + mtxt.pow_text(pow(n, 2), "x") + mtxt.fc(b, False) + "*" + mtxt.pow_text(n, "x") + mtxt.fc(c, False) + "=0", answer
+
+def chemu_ravno_a511():
+# чему равно a: 9^x = (3^x)^a
+    n, k = mrnd.common_base_power()
+    return mtxt.pow_text(pow(n, k), "x") + " = " + mtxt.pow_text(mtxt._(mtxt.pow_text(n, "x")), "a"), str(k)
+
+def reshi_neravenstvo510():
+# Реши неравенство: 48 * (1/4)^x > 3
+    n, k = mrnd.common_base_power()
+    m = mrnd.choice_w([2, 3, 5, 7], [n])
+    lr = rnd.randint(0, 1)
+    return str(pow(n, k) * m) + mtxt.pow_text(mtxt._("1/" + str(n)), "x") + (" > " if lr == 0 else " < ") + str(m), \
+           "x" + (" > " if lr == 1 else " < ") + str(k)
+
+def reshi_neravenstvo():
+# реши неравенство: (1/4)^x > (1/4)^2
+    n = rnd.randint(2, 7)
+    k = rnd.randint(2, 7)
+    lr = rnd.randint(0, 1)
+    return mtxt.pow_text(mtxt._("1/" + str(n)), "x") + (" > " if lr == 0 else " < ") + mtxt.pow_text(mtxt._("1/" + str(n)), k), \
+           "x" + (" > " if lr == 1 else " < ") + str(k)
+
+def h_dolzhen_byit_bolshe_ili_menshe_chem508():
+# х должен быть больше или меньше чем: 2, чтобы (1/2)^x > (1/2)^2
+    n = rnd.randint(2, 7)
+    k = rnd.randint(2, 7)
+    lr = rnd.randint(0, 1)
+    return str(k) + ", чтобы " + mtxt.pow_text(mtxt._("1/" + str(n)), "x") + (" > " if lr == 0 else " < ") + mtxt.pow_text(mtxt._("1/" + str(n)), k), \
+       "больше" if lr == 1 else "меньше"
+
+def h_dolzhen_byit_bolshe_ili_menshe_chem():
+# х должен быть больше или меньше чем: 2, чтобы 3^x > 3^2
+    n = rnd.randint(2, 7)
+    k = rnd.randint(2, 7)
+    lr = rnd.randint(0, 1)
+    return str(k) + ", чтобы " + mtxt.pow_text(n, "x") + (" > " if lr == 0 else " < ") + mtxt.pow_text(n, k),\
+           "больше" if lr == 0 else "меньше"
+
+def chto_bolshe():
+# что больше: (1/4|4)^3 или (1/4|4)^2
+    n = rnd.randint(2, 7)
+    d = rnd.randint(0, 1)
+    k1 = rnd.randint(2, 7)
+    k2 = mrnd.rnd_w(2, 7, [k1])
+    s1 = mtxt.pow_text(mtxt._(("1/" + str(n)) if d == 1 else str(n)), k1)
+    s2 = mtxt.pow_text(mtxt._(("1/" + str(n)) if d == 1 else str(n)), k2)
+    return s1 + " или " + s2, (s1 if k1 < k2 else s2) if d == 1 else (s1 if k1 > k2 else s2)
+
+def uvelichitsya_chislo_ili_umenshitsya_esli_ego_umnozhat_na():
+# увеличится число или уменьшится если его умножать на: (1/4|4)
+    n = rnd.randint(2, 7)
+    d = rnd.randint(0, 1)
+    return ("1/" + str(n)) if d == 1 else str(n), "уменьшится" if d == 1 else "увеличится"
+
+def reshi_uravnenie504():
+# Реши уравнение: 3^(8x^2-6x-13) - 3^(4x^2-3x-7) = 2
+    n = rnd.randint(2, 3)
+    k1 = rnd.randint(2, 3)
+    bt_sign = rnd.randint(0, 1)
+    bt = pow(n, k1) if bt_sign == 0 else -pow(n, k1)
+    rc = mrnd.rnd_w(2, 3, [k1])
+    t1 = pow(n, rc)
+    t2 = - t1 - bt
+    at = 1
+    ct = t1 * t2
+
+    x1 = (mrnd.rnd_w(-4, 4, [0]), rnd.randint(1, 5))
+    x2 = (mrnd.rnd_w(-4, 4, [0, x1[0]]), mrnd.rnd_w(1, 5, [x1[0]]))
+    a = x1[1] * x2[1]
+    b = -x1[0] * x2[1] - x1[1] * x2[0]
+    c = x1[0] * x2[0] + rc
+    px = pol.Polynomial([a, b, c], [2, 1, 0])
+    px1 = pol.Polynomial([2 * a, 2 * b, 2 * c - 2*k1], [2, 1, 0])
+
+    x1n, x1d = mf.s_fraction(x1)
+    x2n, x2d = mf.s_fraction(x2)
+
+    return mtxt.pow_text(n, mtxt._(px1.get_str())) + mtxt.p0m1(bt_sign) + mtxt.pow_text(n, mtxt._(px.get_str()) + " = " + str(-ct)), \
+        mtxt.f_t(x1n, x1d) + " и " + mtxt.f_t(x2n, x2d)
+
+def reshi_uravnenie503():
+# реши уравнение: 3t^2 - t - 2 = 0
+    t1 = mrnd.rnd_w(-10, 10, [0])
+    t2 = mrnd.rnd_w(-10, 10, [0, t1, -t1])
+    p1 = pol.Polynomial([1, -t1], [1, 0])
+    p2 = pol.Polynomial([1, -t2], [1, 0])
+    p = pol.Polynomial.product(polynomials=(p1, p2))
+    m = p.monomials[0]
+    p.monomials[0] = p.monomials[2]
+    p.monomials[2] = m
+    return p.get_str() + " = 0", str(t1) + " и " + str(t2)
+
+def dokazhi_tozhdestvo():
+# докажи тождество: 3^(8x^2-6x-13) = 3 * (3^(4x^2 - 3x - 7))^2
+    n, k1 = mrnd.common_base_power()
+    p = pol.Polynomial([mrnd.rnd_w(-5, 5, [0]), mrnd.rnd_w(-5, 5, [0]), mrnd.rnd_w(-10, 10, [0])], [2, 1, 0])
+    k = rnd.randint(2, 3)
+    pr = pol.Polynomial.product(polynomials=(p, pol.Polynomial([k], [0])))
+    pr.monomials[0].coefficient = pr.monomials[0].coefficient + k1
+    return mtxt.pow_text(n, mtxt._(pr.get_str())) + " = " + str(pow(n, k1)) + mtxt.pow_text(mtxt._(mtxt.pow_text(n, mtxt._(p.get_str()))), k), ''
+
+def chemu_ravno_a():
+# чему равно a: 3^(x + 3) = a * 3^x
+    n, k = mrnd.common_base_power()
+    return mtxt.pow_text(str(n), mtxt._("x + " + str(k))) + " = a * " + mtxt.pow_text(n, "x"), "a = " + str(pow(n, k))
+
+def vo_skolko_raz():
+# во сколько раз: 3^(x + 3) больше чем 3^x?
+    n, k = mrnd.common_base_power()
+    return mtxt.pow_text(str(n), mtxt._("x + " + str(k))) + " больше чем " + mtxt.pow_text(n, "x"), "в " + str(pow(n, k)) + " раз"
+
+
+def vyichisli_ploschad_pryamougolnika_esli_ego_perimetr_raven():
+# Вычисли площадь прямоугольника, если его периметр равен: 30 см, а одна сторона больше другой на 1 см.
+    a = rnd.randint(3, 7)
+    b = a + rnd.randint(1, 4)
+    return str(2 * (a + b)) + " см, а одна сторона больше другой на " + str(b - a), str(a * b) + " см^2"
+
+def najdi_storonyi_pryamougolnika_esli_ego_perimetr_raven():
+# найди стороны прямоугольника, если его периметр равен: 30 см, а одна сторона больше другой на 1 см.
+    a = rnd.randint(3, 7)
+    b = a + rnd.randint(1, 4)
+    return str(2 * (a + b)) + " см, а одна сторона больше другой на " + str(b - a), str(a) + " см и " + str(b) + " см"
+
+def vyichisli_perimetr_pryamougolnika_esli_odna_ego_storona_ravna():
+# вычисли периметр прямоугольника, если одна его сторона равна: 4 см, а другая на 1 см больше первой
+    a = rnd.randint(3, 7)
+    b = a + rnd.randint(1, 4)
+    return str(a) + " см, а другая на " + str(b - a) + " см больше первой", str(2 * (a + b)) + " см"
+
+def vyichisli_perimter_pryamougolnika_esli_odna_storona_ravna():
+# вычисли перимтер прямоугольника, если одна сторона равна: 4 см, а другая 5 см
+    a = rnd.randint(3, 10)
+    b = mrnd.rnd_w(3, 10, [a])
+    return str(a) + " см, а другая " + str(b) + " см", str(2 * (a + b)) + " см"
+
+def vyichisli_ploschad_pryamougolnika_esli_odna_storona_ravna():
+# вычисли площадь прямоугольника, если одна сторона равна: 4 см, а другая 5 см
+    a = rnd.randint(3, 10)
+    b = mrnd.rnd_w(3, 10, [a])
+    return str(a) + " см, а другая " + str(b) + " см", str(a * b) + " см^2"
+
+def razdeli_chislo495():
+# Раздели число 138 в отношении 18:5
+    n1 = rnd.randint(5, 20)
+    n2 = mrnd.rnd_w(5, 20, [n1])
+    c = rnd.randint(3, 6)
+    return str((n1 + n2) * c) + " в отношении " + str(n1) + ":" + str(n2), str(n1 * c) + " и " + str(n2 * c)
+
+def nuzhno_razdelit():
+# нужно разделить: 138 яблок на две кучи в отношении 18:5. На сколько частей будешь делить, чтобы потом объединить части в кучи?
+    n1 = rnd.randint(5, 20)
+    n2 = mrnd.rnd_w(5, 20, [n1])
+    c = rnd.randint(3, 6)
+    return str((n1 + n2) * c) + " яблок нужно разделить на две кучи в отношении " + str(n1) + ":" + str(n2) + ". На сколько частей будешь делить, чтобы потом объединить части в кучи? ", str(n1 + n2)
+
+def skolko_yablok_v_kazhdoj_kuche_esli():
+# сколько яблок в каждой куче если: 138 яблок разделили на 23 равных части. В одну кучу положили 18 частей, а оставшиеся 5 частей в другую кучу.
+    n1 = rnd.randint(5, 20)
+    n2 = mrnd.rnd_w(5, 20, [n1])
+    c = rnd.randint(3, 6)
+    return str((n1 + n2) * c) + " яблок разделили на " + str(n1 + n2) + " равных частей. В одну кучу положили " + str(n1) + " частей, а оставшиеся " + str(n2) + " частей в другую кучу", \
+           str(n1 * c) + " и " + str(n2 * c)
+
+def razdelili():
+# разделили: 138 на 23 равные части. Чему равна каждая часть?
+    n = rnd.randint(15, 35)
+    c = rnd.randint(3, 6)
+    return str(c * n) + " на " + str(n) + " равные части. Чему равна каждая часть?", str(c)
+
+def najdite():
+# Найдите: диаметр|радиус окружности, если ее радиус|диаметр равен 4 см 4 мм
+    dano = rnd.randint(0, 1)
+    v = 2 * rnd.randint(10, 30)
+    return ("радиус" if dano == 0 else "диаметр") + " окружности, если ее " + ("радиус" if dano == 1 else "диаметр") + " равен " \
+        + str(v // 10) + " см " + str(v % 10) + " мм" , str(2*v // 10) + " см " + str(2*v % 10) + " мм" if dano == 1 else \
+        str(int(v/2) // 10) + " см " + str(int(v/2) % 10) + " мм"
+
+def opredeli_skorost_poezda_i_zapolni_tablitsu():
+# Определи скорость поезда и заполни таблицу:
+# t, ч:    3, 8,   x, 1.2,  x |
+# s, км: 225, x, 300,   x, 60
+    count = rnd.randint(5, 7)
+    speed = rnd.randint(1, 20) * 5 + 50
+    ds = [rnd.randint(5, 16) for x in range(0, count)]
+    hs = [rnd.randint(0, 1) for x in range(0, count)]
+    pos0 = rnd.randint(0, count - 1)
+    return "время, ч: " + ", ".join([str(x) if hs[i] == 0 or i == pos0 else "x" for i, x in enumerate(ds)]) + " | " \
+        + "расстояние, км: " + ", ".join([str(x * speed) if hs[i] == 1 or i == pos0 else "x" for i, x in enumerate(ds)]), \
+           str(speed) + " км/ч, " + ", ".join([str(x) for i, x in enumerate(ds)]) + " | " + ", ".join([str(x * speed) for i, x in enumerate(ds)])
+
+def opredeli_skorost_poezda_esli():
+# Определи скорость поезда, если: за 3 часа он проехал 450 км
+    speed = rnd.randint(1, 20) * 5 + 50
+    n = rnd.randint(3, 7)
+    return "за " + str(n) + " часа он проехал " + str(n * speed), str(speed) + " км/ч"
+
+
+def za_m_kg_konfet_zaplatitli_p_rub_po_tablitse_opredelite_skolko_stoit_1_kg_konfet_i_zapolni_tablitsu():
+# За m кг конфет заплатитли p руб. По таблице определите сколько стоит 1 кг конфет и заполни таблицу:
+# m, кг  :   3, 8,   x, 1.2,  x
+# p, руб.: 225, x, 300,   x, 60
+    count = rnd.randint(5, 7)
+    kg = rnd.randint(1, 40) * 5 + 100
+    ws = [rnd.randint(1, 12) for x in range(0, count)]
+    hs = [rnd.randint(0, 1) for x in range(0, count)]
+    pos0 = rnd.randint(0, count - 1)
+    return "m, кг: " + ", ".join([str(x) if hs[i] == 0 or i == pos0 else "x" for i, x in enumerate(ws)]) + " | " \
+        + "p. руб.: " + ", ".join([str(x * kg) if hs[i] == 1 or i == pos0 else "x" for i, x in enumerate(ws)]), \
+           str(kg) + " руб., " + ", ".join([str(x) for i, x in enumerate(ws)]) + " | " + ", ".join([str(x * kg) for i, x in enumerate(ws)])
+
+
+def opredeli_skolko_stoit_1_kg_konfet_esli():
+# Определи сколько стоит 1 кг конфет, если: 3 кг стоят 450 руб.
+    kg = rnd.randint(1, 20) * 5 + 20
+    n = rnd.randint(3, 7)
+    return str(n) + " кг стоят " + str(n * kg) + " руб.", str(kg) + " руб."
+
+def predstavte_vyirazhenie_v_vide_zavisimosti_ot_aplusb_i_ot_ab():
+    # докажите тождество: 2a^2-5ab+2b^2 = 2(a-b)^2 - ab
+    s = rnd.randint(0, 1)
+    f1 = rnd.choice([1, 2, 3, 5])
+    f2 = mrnd.choice_w([1, 2, 3, 5], [f1])
+    k = rnd.randint(2, 5)
+    c = rnd.randint(1, 5)
+    return mtxt.fc(pow(f1, 2) * k) + mtxt.pow_text("a", 2) + mtxt.p0m1(s) + mtxt.fc(
+        f1 * f2 * 2 * k + (c if s == 1 else -c)) + "ab + " + mtxt.fc(pow(f2, 2) * k) + mtxt.pow_text("b", 2), \
+           str(k) + mtxt.pow_text(mtxt._(mtxt.fc(f1) + "a" + mtxt.p0m1(s) + mtxt.fc(f2) + "b"), 2) + " - " + mtxt.fc(c) + "ab"
+
+def najdi_znachenie_vyirazheniya():
+# Найди значение выражения: 2a^2-5ab+2b^2 при a=k(6)+k(5) b=k(6)-k(5)
+    s = rnd.randint(0, 1)
+    f1 = rnd.choice([1, 2, 3, 5])
+    f2 = mrnd.choice_w([1, 2, 3, 5], [f1])
+    a = rnd.choice([1, 2, 3, 5, 6, 7, 8, 10])
+    b = mrnd.choice_w([1, 2, 3, 5, 6, 7, 8, 10], [a])
+    k = rnd.randint(2, 5)
+    c = rnd.randint(1, 5)
+
+    x, y = mf.s_fraction((a, pow(f1, 2)))
+    a1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((a, pow(f2, 2)))
+    a2 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f1, 2)))
+    b1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f2, 2)))
+    b2 = mtxt.f_t(x, y)
+
+    if s == 0:
+        a_x, a_y = mf.s_fraction_sum((4 * k * a, 1), (-c * (a - b), f1 * f2))
+    else:
+        a_x, a_y = mf.s_fraction_sum((4 * k * b, 1), (-c * (a - b), f1 * f2))
+
+    return mtxt.fc(pow(f1, 2) * k) + mtxt.pow_text("a", 2) + mtxt.p0m1(s) + mtxt.fc(f1 * f2 * 2 * k + (c if s == 1 else -c)) + "ab + " + mtxt.fc(pow(f2, 2) * k) + mtxt.pow_text("b", 2) + \
+        ", при a = " + mtxt.k_t(a1) + " + " + mtxt.k_t(b1) + ", b = " + mtxt.k_t(a2) + " - " + mtxt.k_t(b2), \
+        mtxt.f_t(a_x, a_y)
+
+
+def vyichisli_znachenie_vyirazheniya483():
+# вычисли значение выражения: 2(a-b)^2 - ab при a=k(6)+k(5) b=k(6)-k(5)
+    s = rnd.randint(0, 1)
+    f1 = rnd.choice([1, 2, 3, 5])
+    f2 = mrnd.choice_w([1, 2, 3, 5], [f1])
+    a = rnd.choice([1, 2, 3, 5, 6, 7, 8, 10])
+    b = mrnd.choice_w([1, 2, 3, 5, 6, 7, 8, 10], [a])
+    k = rnd.randint(2, 5)
+    c = rnd.randint(1, 5)
+
+    x, y = mf.s_fraction((a, pow(f1, 2)))
+    a1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((a, pow(f2, 2)))
+    a2 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f1, 2)))
+    b1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f2, 2)))
+    b2 = mtxt.f_t(x, y)
+
+    if s == 0:
+        a_x, a_y = mf.s_fraction_sum((4 * k * a, 1), (-c * (a - b), f1 * f2))
+    else:
+        a_x, a_y = mf.s_fraction_sum((4 * k * b, 1), (c * (a - b), f1 * f2))
+
+    return str(k) + mtxt.pow_text(mtxt._(mtxt.fc(f1) + "a" + mtxt.p0m1(s) + mtxt.fc(f2) + "b"), 2) + mtxt.p0m1(1-s) + mtxt.fc(c) + "ab" + ", при a = " + mtxt.k_t(a1) + " + " + mtxt.k_t(b1) \
+           + ", b = " + mtxt.k_t(a2) + " - " + mtxt.k_t(b2), \
+           mtxt.f_t(a_x, a_y)
+
+def vyichisli_znachenie_vyirazheniya482():
+# вычисли значение выражения: ab при a=k(6)+k(5) b=k(6)-k(5)
+
+    f1 = rnd.choice([1, 2, 3, 5])
+    f2 = mrnd.choice_w([1, 2, 3, 5], [f1])
+    a = rnd.choice([1, 2, 3, 5, 6, 7, 8, 10])
+    b = mrnd.choice_w([1, 2, 3, 5, 6, 7, 8, 10], [a])
+
+    x, y = mf.s_fraction((a, pow(f1, 2)))
+    a1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((a, pow(f2, 2)))
+    a2 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f1, 2)))
+    b1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f2, 2)))
+    b2 = mtxt.f_t(x, y)
+
+    a_x, a_y = mf.s_fraction((a-b, f1*f2))
+
+    return "a*b, при a = " + mtxt.k_t(a1) + " + " + mtxt.k_t(b1) + ", b = " + mtxt.k_t(a2) + " - " + mtxt.k_t(b2), \
+       mtxt.f_t(a_x, a_y)
+
+def vyichisli_znachenie_vyirazheniya():
+# вычисли значение выражения: a - b при a=k(6)+k(5) b=k(6)-k(5)
+    s = rnd.randint(0, 1)
+    f1 = rnd.choice([1, 2, 3, 5])
+    f2 = mrnd.choice_w([1, 2, 3, 5], [f1])
+    a = rnd.choice([1, 2, 3, 5, 6, 7, 8, 10])
+    b = mrnd.choice_w([1, 2, 3, 5, 6, 7, 8, 10], [a])
+
+    x, y = mf.s_fraction((a, pow(f1, 2)))
+    a1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((a, pow(f2, 2)))
+    a2 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f1, 2)))
+    b1 = mtxt.f_t(x, y)
+    x, y = mf.s_fraction((b, pow(f2, 2)))
+    b2 = mtxt.f_t(x, y)
+
+    return mtxt.fc(f1) + "a" + mtxt.p0m1(s) + mtxt.fc(f2) + "b, при a = " + mtxt.k_t(a1) + " + " + mtxt.k_t(b1) \
+           + ", b = " + mtxt.k_t(a2) + " - " + mtxt.k_t(b2), \
+           "2*" + mtxt.k_t(b if s == 1 else a)
+
+def dokazhite_tozhdestvo480():
+# докажите тождество: 2a^2-5ab+2b^2 = 2(a-b)^2 - ab
+    s = rnd.randint(0, 1)
+    f1 = rnd.choice([1, 2, 3, 5])
+    f2 = mrnd.choice_w([1, 2, 3, 5], [f1])
+    k = rnd.randint(2, 5)
+    c = rnd.randint(1, 5)
+    return mtxt.fc(pow(f1, 2) * k) + mtxt.pow_text("a", 2) + mtxt.p0m1(s) + mtxt.fc(f1 * f2 * 2 * k + (c if s == 1 else -c)) + "ab + " + mtxt.fc(pow(f2, 2) * k) + mtxt.pow_text("b", 2) + \
+        " = " + mtxt.fc(k) + mtxt._(mtxt.fc(f1) + "a" + mtxt.p0m1(s) + mtxt.fc(f2) + "b") + "^2 - " + mtxt.fc(c) + "ab", ''
+
+def reshi_uravnenie479():
+# Реши уравнение: log1/3->(x + 12) = -2
+    n, k = mrnd.common_base_power()
+    s = rnd.randint(0, 1)
+    log_s = rnd.randint(0, 1)
+    a = rnd.randint(1, 20)
+    log_base_str = "1/" + str(n) if s == 1 else str(n)
+
+    return mtxt.log_text(log_base_str, mtxt._("x" + mtxt.p0m1(log_s) + str(a))) + " = " + ("-" if s == 1 else "") + str(k) ,\
+           'x = ' + str(pow(n, k) + (-a if log_s == 0 else a))
+
+def reshi_uravnenie478():
+# реши уравнение: log2->x = 3
+    n, k = mrnd.common_base_power()
+    return mtxt.log_text(n, "x") + " = " + str(k), str(pow(n, k))
+
+def chto_poluchitsya_esli_vozvesti():
+# что получится если возвести: 3 в 2-ю степень // k = [1, 3]
+    n, k = mrnd.common_base_power()
+    return str(n) + " в " + str(k) + " степень", str(pow(n, k))
+
+def razlozhit_na_mnozhiteli476():
+# Разложить на множители: 2ab+3ak(a)+4bk(b)+6k(ab)
+    cs = rnd.randint(0, 1)
+    gs = rnd.randint(0, 1)
+
+    fc1 = rnd.choice([1, 2, 3, 5, 7])
+    fc2 = mrnd.choice_w([1, 2, 3, 5, 7], [fc1])
+    acp = rnd.randint(1, 3)
+    bcp = rnd.randint(1, 3)
+
+    f1 = rnd.randint(1, 7)
+    f2 = mrnd.rnd_w(1, 7, [f1])
+    a1p = rnd.randint(1, 3)
+    b1p = rnd.randint(1, 3)
+    a2p = rnd.randint(1, 3)
+    b2p = rnd.randint(1, 3)
+
+    def get_term(f, ap, bp):
+        return mtxt.fc(f) + mtxt.get_k("a", ap) + mtxt.get_k("b", bp)
+
+    def get_common_str():
+        return mtxt._(get_term(fc1, acp, 0) + mtxt.p0m1(cs) + get_term(fc2, 0, bcp))
+
+    return get_term(f1 * fc1, a1p + acp, b1p) + mtxt.p0m1(cs) + get_term(f1 * fc2, a1p, b1p + bcp) + \
+        mtxt.p0m1(gs) + get_term(f2 * fc1, a2p + acp, b2p) + mtxt.p0m1(0 if cs == gs else 1) + get_term(f2 * fc2, a2p, bcp + b2p), \
+        get_common_str() + mtxt._(get_term(f1, a1p, b1p) + mtxt.p0m1(gs) + get_term(f2, a2p, b2p))
+
+def vyinesi_obschij_mnozhitel475():
+# вынеси общий множитель: 3a(2a - k(b)) - k(b)(2a - k(b))
+    cs = rnd.randint(0, 1)
+    gs = rnd.randint(0, 1)
+
+    fc1 = rnd.choice([1, 2, 3, 5, 7])
+    fc2 = mrnd.choice_w([1, 2, 3, 5, 7], [fc1])
+    acp = rnd.randint(1, 3)
+    bcp = rnd.randint(1, 3)
+
+    f1 = rnd.randint(1, 7)
+    f2 = mrnd.rnd_w(1, 7, [f1])
+    a1p = rnd.randint(1, 3)
+    b1p = rnd.randint(1, 3)
+    a2p = rnd.randint(1, 3)
+    b2p = rnd.randint(1, 3)
+
+    def get_term(f, ap, bp):
+        return mtxt.fc(f) + mtxt.get_k("a", ap) + mtxt.get_k("b", bp)
+
+    def get_common_str():
+        return mtxt._(get_term(fc1, acp, 0) + mtxt.p0m1(cs) + get_term(fc2, 0, bcp))
+
+    return get_term(f1, a1p, b1p) + get_common_str() + mtxt.p0m1(gs) + get_term(f2, a2p, b2p) + get_common_str(),\
+           get_common_str() + mtxt._(get_term(f1, a1p, b1p) + mtxt.p0m1(gs) + get_term(f2, a2p, b2p))
+
+def vyinesi_obschij_mnozhitel():
+# вынеси общий множитель: 2ab + 4ak(b)
+    common_factor = rnd.randint(1, 7)
+    f1 = rnd.choice([1, 2, 3, 5, 7])
+    f2 = mrnd.choice_w([1, 2, 3, 5, 7], [f1])
+    apk = rnd.randint(1, 3)
+    bpk = rnd.randint(1, 3)
+    acpk = mrnd.rnd_w(1, 4 - apk)
+    bcpk = mrnd.rnd_w(1, 4 - bpk)
+    s = rnd.randint(0, 1)
+
+    return mtxt.fc(common_factor * f1) + mtxt.get_k("a", apk + acpk) + mtxt.get_k("b", bcpk) + mtxt.p0m1(s) + \
+           mtxt.fc(common_factor * f2) + mtxt.get_k("a", acpk) + mtxt.get_k("b", bpk + bcpk), \
+        mtxt.fc(common_factor) + mtxt.get_k("a", acpk) + mtxt.get_k("b", bcpk) + \
+           mtxt._(mtxt.fc(f1) + mtxt.get_k("a", apk) + mtxt.p0m1(s) + mtxt.fc(f2) + mtxt.get_k("b", bpk))
+
+def ploschad_koltsa_ravna_ploschad_vneshnego_kruga_minus_ploschad_vnutrennego_kruga_poschitaj_ploschad_koltsa_esli():
+    r1 = rnd.randint(2, 7)
+    r2 = rnd.randint(r1 + 1, 9)
+    pi = 3.14
+    return "радиус внешнего круга равен 1/" + str(r1) + " см, а внутреннего 1/" + str(r2), \
+           format(pi * (pow(1 / r1, 2) - pow(1 / r2, 2)), '.2f') + " см^2"
+
+
+def poschitaj_ploschad_kruga_esli_radius_raven():
+    r = rnd.randint(2, 9)
+    pi = 3.14
+    return "радиус круга равен 1/" + str(r) + " см", format(pi * pow(1/r, 2), '.2f') + " см^2"
+
+
+def ploschad_kruga_vyichislyaetsya_po_fromule_pi__r2_poschitaj_ploschad_kruga_esli_pi_ravno_314_i():
+    r = rnd.randint(2, 9)
+    pi = 3.14
+    return "радиус круга равен " + str(r) + " см", format(pi * pow(r, 2), '.2f') + " см^2"
+
+def vyichisli():
+# вычисли: -3 * (-2/3)^3 + (1/3)^2
+    d = rnd.choice([2, 3, 5])
+
+    terms_count = rnd.randint(2, 3)
+    terms = []
+    for i in range(0, terms_count):
+        n = rnd.choice([2, 3, 4, 5])
+        # s1, a, s2, n, d, k
+        terms.append((rnd.randint(0, 1), rnd.randint(2, 7), rnd.randint(0, 1), mrnd.rnd_w(2, 5, [d]), d, rnd.randint(2, 4)))
+
+    def get_term_text(t, is_first=False):
+        s1, a, s2, n, d, k = t
+        return (("-" if is_first else " - ") if s1 == 1 else (" + " if not is_first else "")) + mtxt.fc(a) + "*" + \
+               mtxt.pow_text(mtxt._(("-" if s2 == 1 else "") + mtxt.f_t(n, d)), k)
+
+    def get_term_value(t):
+        s1, a, s2, n, d, k = t
+
+
+        return mf.s_fraction((pow(n, k) * a * pow(-1, (pow(-s2, k) + pow(-s1, 1)) % 2), pow(d, k)))
+
+    def get_exp_value():
+        r_n = 0
+        r_d = 1
+        for t in terms:
+            n, d = get_term_value(t)
+            r_n, r_d = mf.s_fraction((n * r_d + r_n * d, r_d * d))
+        return r_n, r_d
+
+    text = ""
+    for t in terms:
+        text += get_term_text(t, terms.index(t) == 0)
+
+    answer_n, answer_d = get_exp_value()
+
+    return text, mtxt.f_t(answer_n, answer_d)
+
+def skolko_budet469():
+#  сколько будет (-1/3)^3
+    a = rnd.randint(2, 5)
+    n = rnd.randint(3, 5)
+    return mtxt.pow_text(mtxt._("-1/" + str(a)), n), ("-" if n % 2 != 0 else "") + "1/" + str(pow(a, n))
+
+def skolko_budet468():
+# сколько будет: (1/3)^3
+    a = rnd.randint(2, 5)
+    n = rnd.randint(3, 5)
+    return mtxt.pow_text(mtxt._("1/" + str(a)), n), "1/" + str(pow(a, n))
+
+
+def skolko_budet467():
+# сколько будет: 3^3
+    a = rnd.randint(2, 5)
+    n = rnd.randint(3, 5)
+    return mtxt.pow_text(a, n), str(pow(a, n))
+
+def skolko_budet466():
+# сколько будет: 3 * 3 * 3
+    a = rnd.randint(2, 5)
+    n = rnd.randint(3, 5)
+    return mtxt.mp(str(a), n), str(pow(a, n))
+
+def skolko_budet():
+# сколько будет: 3 умножить само на себя 3 раза
+    a = rnd.randint(2, 5)
+    n = rnd.randint(3, 5)
+    return str(a) + " умножить само на себя " + str(n) + " раз", str(pow(a, n))
+
+
+def predstav464():
+# Представь: 2^30 в виде степени с основанием 2^10
+    a = rnd.choice([2, 3, 4, 5])
+    n1 = rnd.randint(2, 10)
+    n2 = rnd.randint(2, 10)
+    return mtxt.pow_text(a, n1 * n2) + " в виде степени с основанием " + mtxt.pow_text(a, n1), \
+           mtxt.pow_text(mtxt._(mtxt.pow_text(a, n1)) , n2)
+
+def chemu_raven_x_v_uravnenii():
+# чему равен x в уравнении [a^40 = (a^20)^x]
+    x = rnd.randint(3, 20)
+    n = rnd.randint(3, 20)
+    return mtxt.pow_text("a", x * n) + " = " + mtxt.pow_text(mtxt._(mtxt.pow_text("a", n)), "x"), str(x)
+
+def predstav462():
+    a = rnd.choice([2, 3, 4, 5, 6, 7])
+    n1 = rnd.randint(2, 4)
+    n2 = rnd.randint(2, 7)
+    return mtxt.pow_text(pow(a, n1), n2) + " в виде степени с основанием " + str(a), mtxt.pow_text(a, n1 * n2)
+
+def predstav461():
+    a = rnd.choice([2, 3, 4, 5, 6, 7])
+    n1 = rnd.randint(2, 4)
+    n2 = rnd.randint(2, 7)
+    return mtxt.pow_text(mtxt._(mtxt.pow_text(a, n1)), n2) + " в виде степени с основанием " + str(a), mtxt.pow_text(a, n1 * n2)
+
+def predstav460():
+    a = rnd.choice([2, 3, 4, 5, 6, 7])
+    n1 = rnd.randint(2, 4)
+    return str(pow(a, n1)) + " в виде степени с основанием " + str(a), mtxt.pow_text(a, n1)
+
+
+def uprosti459():
+    n1 = rnd.randint(3, 8)
+    n2 = rnd.randint(1, n1 - 1)
+    n3 = rnd.randint(2, 7)
+    n4 = rnd.randint(2, (n1 + n2)*n3 - 1)
+    return mtxt.pow_text(mtxt._(mtxt.pow_text("a", n1) + "*" + mtxt.pow_text("a", n2)), n3) + "/" + \
+           mtxt._(mtxt.pow_text("a", n4)), mtxt.pow_text("a", (n1 + n2) * n3 - n4)
+
+def uprosti458():
+    n1 = rnd.randint(3, 8)
+    n2 = rnd.randint(1, n1 - 1)
+    n3 = rnd.randint(2, 7)
+    return mtxt.pow_text(mtxt._(mtxt.pow_text("a", n1) + "*" + mtxt.pow_text("a", n2)), n3), mtxt.pow_text(
+        "a", (n1 + n2) *n3)
+
+def uprosti457():
+    n1 = rnd.randint(3, 8)
+    n2 = rnd.randint(1, n1 - 1)
+    n3 = rnd.randint(1, n1 + n2 - 1)
+    return mtxt.pow_text("a", n1) + "*" + mtxt.pow_text("a", n2) + "/" + mtxt._(mtxt.pow_text("a", n3)), mtxt.pow_text("a", n1 + n2 - n3)
+
+
+def uprosti456():
+    n1 = rnd.randint(3, 8)
+    n2 = rnd.randint(1, n1 - 1)
+    return mtxt.pow_text("a", n1) + "/" + mtxt._(mtxt.pow_text("a", n2)), mtxt.pow_text("a", n1 - n2)
+
+def uprosti455():
+    n1 = rnd.randint(3, 8)
+    n2 = rnd.randint(1, n1 - 1)
+    return mtxt.pow_text("a", n1) + "/" + mtxt._(mtxt.mp("a", n2)), mtxt.pow_text("a", n1 - n2)
+
+def uprosti454():
+    n1 = rnd.randint(3, 8)
+    n2 = rnd.randint(1, n1 - 1)
+    return mtxt.mp("a", n1) + "/" + mtxt._(mtxt.mp("a", n2)), mtxt.pow_text("a", n1 - n2)
+
+def uprosti453():
+    n1 = rnd.randint(2, 7)
+    n2 = mrnd.rnd_w(2, 7, [n1])
+    n3 = rnd.randint(2, 5)
+    return mtxt.pow_text("a", n1) + "*" + mtxt.pow_text("a", n2) + "*" + mtxt.pow_text("a", n3), mtxt.pow_text("a",
+                                                                                                        n1 + n2 + n3)
+
+def uprosti452():
+    n1 = rnd.randint(2, 7)
+    n2 = mrnd.rnd_w(2, 7, [n1])
+    c = rnd.randint(2, 5)
+    return mtxt.pow_text("a", n1) + "*" + mtxt.pow_text("a", n2) + "*" + mtxt.mp("a", c), mtxt.pow_text("a", n1 + n2 + c)
+
+def uprosti451():
+    n1 = rnd.randint(2, 7)
+    n2 = mrnd.rnd_w(2, 7, [n1])
+    return mtxt.pow_text("a", n1) + "*" + mtxt.pow_text("a", n2), mtxt.pow_text("a", n1 + n2)
+
+def uprosti450():
+    c = rnd.randint(2, 5)
+    n = rnd.randint(2, 4)
+    return mtxt.pow_text("a", n) + "*" + mtxt.mp("a", c), mtxt.pow_text("a", c + n)
+
+def uprosti449():
+    c = rnd.randint(3, 7)
+    return mtxt.mp("a", c), mtxt.pow_text("a", c)
+
+
+def uprosti448():
+# упрости: (4x)/(2k(x) - k(y)) : (12xk(x)/(4x-y) : (2x)/(6x-3k(xy))
+    k1 = rnd.choice([1, 2, 3])
+    k2 = mrnd.choice_w([1, 2, 3], [k1])
+    s = rnd.randint(0, 1)
+
+    o_pos = rnd.randint(0, 5)
+    o2_pos = rnd.randint(0, 2) if o_pos in [3, 4, 5] else rnd.randint(3, 5)
+    osh_pos = mrnd.rnd_w(0, 2, [o2_pos]) if o2_pos in [0, 1, 2] else mrnd.rnd_w(3, 5, [o2_pos])
+
+    m = rnd.choice([2, 3, 5])
+    mx = rnd.randint(1, 3)
+    my = rnd.randint(1, 3)
+
+    a = rnd.choice([2, 3, 5, 7])
+    b = mrnd.choice_w([2, 3, 5, 7], [a])
+    a_pos_possible = {0, 1, 2}.difference({o2_pos, osh_pos}) if osh_pos in [0, 1, 2] else {3, 4, 5}.difference({o2_pos, osh_pos})
+    a_pos = rnd.choice(list(a_pos_possible))
+    b_pos_possible = {3, 4, 5}.difference({o_pos}) if o_pos in [3, 4, 5] else {0, 1, 2}.difference({o_pos})
+    b_pos = rnd.choice(list(b_pos_possible))
+
+    xy = rnd.randint(0, 1)
+    if xy == 0:
+        ma = rnd.randint(0, mx - 1)
+        mb = mx - ma
+    else:
+        ma = rnd.randint(0, my - 1)
+        mb = my - ma
+
+    xy_pos_possible = {0, 1, 2}.difference({b_pos, o_pos}) if o_pos in [0, 1, 2] else {3, 4, 5}.difference({b_pos, o_pos})
+    xy_pos = rnd.choice(list(xy_pos_possible))
+
+    a2 = rnd.randint(0, 1)
+    a3 = rnd.randint(0, 1)
+
+    t = ['', '', '', '', '', '']
+
+    xys = "x" if xy == 0 else "y"
+
+    def get_o_text(br=True):
+        res = mtxt.fc(k1) + mtxt.k_t("x") + mtxt.p0m1(s) + mtxt.fc(k2) + mtxt.k_t("y")
+        return res if not br else mtxt._(res)
+
+    def get_k(symb, p):
+        if p == 0:
+            return ""
+        if p == 1:
+            return mtxt.k_t(symb)
+        if p == 2:
+            return symb
+        if p == 3:
+            return symb + mtxt.k_t(symb)
+        if p == 4:
+            return mtxt.pow_text(symb, 2)
+
+    def get_k2(symb1, symb2, p1, p2):
+        res = ""
+        c = 0
+        if (p1 % 2 != 0) and (p2 % 2 != 0):
+            res = mtxt.k_t(symb1 + symb2)
+            c = 1
+        res = get_k(symb1, p1 - c) + get_k(symb2, p2 - c) + res
+        return res
+
+    def get_om_text(br=True):
+        res = mtxt.fc(k1 * m) + get_k2("x", "y", 1 + mx, my) + mtxt.p0m1(s) + mtxt.fc(k2 * m) + get_k2("x", "y", mx, my + 1)
+        return res if not br else mtxt._(res)
+
+    def get_osh_text(br=True):
+        return mtxt._(mtxt.fc(pow(k1, 2)) + "x" + " - " + mtxt.fc(pow(k2, 2)) + "y")
+
+    t[a_pos] = str(a)
+    t[b_pos] = (str(b) if mb == 0 or b != 1 else "") + get_k(xys, mb)
+    t[o_pos] = get_o_text()
+    t[o2_pos] = get_om_text()
+    t[xy_pos] = "1" if ma == 0 else get_k(xys, ma)
+    t[osh_pos] = get_osh_text()
+
+    answer = ""
+    if o_pos in [3, 4, 5]:
+        n, d = mf.s_fraction((a * m, b))
+        answer = mtxt.f_t(n, d) + "*" + get_osh_text() + (get_k("y", my) if xy == 0 else get_k("x", mx))
+    else:
+        n, d = mf.s_fraction((b, a * m))
+        answer = mtxt.f_t(b, mtxt._(str(a * m) + get_osh_text() + (get_k("y", my) if xy == 0 else get_k("x", mx))))
+
+    # return str({"o": o_pos, "o2": o2_pos, "osh": osh_pos, "a": a_pos, "b": b_pos, "xy": xy_pos}), ""
+
+    return t[0] + "/" + t[3] + (" * " if a2 == 0 else " : ") + (t[1] + "/" + t[4] if a2 == 0 else t[4] + "/" + t[1]) + \
+           (" * " if a3 == 0 else " : ") + (t[2] + "/" + t[5] if a3 == 0 else t[5] + "/" + t[2]), answer
+
+def uprosti():
+# упрости: (a - 4b)/(k(a) - 2k(b)) // произвольный коэффициенты
+    k1 = rnd.choice([1, 2, 3, 5, 7, 8])
+    k2 = mrnd.choice_w([1, 2, 3, 5, 7, 8], [k1])
+    s = rnd.randint(0, 1)
+
+    def get_f_text(ch1, f1, ch2, f2, sign):
+        return mtxt._(mtxt.k_t(mtxt.fc(f1) + ch1) + mtxt.p0m1(sign) + mtxt.k_t(mtxt.fc(f2) + ch2))
+
+    return mtxt._(mtxt.fc(k1) + "a" + " - " + mtxt.fc(k2) + "b") + "/" + get_f_text("a", k1, "b", k2, s), \
+           get_f_text("a", k1, "b", k2, 1-s)
+
+def vyinesi_obschij_mnozhitel_za_skobku():
+    n = rnd.choice([1, 2, 3, 5, 7])
+    k1 = mrnd.choice_w([1, 2, 3, 5, 7, 9], [n])
+    k2 = mrnd.choice_w([1, 2, 3, 5, 7, 9], [n, k1])
+
+    # coeff, sign, a^, k(a), b^, k(b)
+    t1p = (n * k1, rnd.randint(0, 1), rnd.randint(0, 5), rnd.randint(0, 1), rnd.randint(0, 5), rnd.randint(0, 1))
+    t2p = (n * k2, rnd.randint(0, 1), mrnd.rnd_w(0, 5, [t1p[2]]), rnd.randint(0, 1), mrnd.rnd_w(0, 5, [t1p[4]]), rnd.randint(0, 1))
+
+    def get_term_text(term, space=False):
+        c, s, ap, akp, bp, bkp = term
+        if c == 1 and ap == 0 and akp == 1 and bp == 0 and bkp == 1:
+            return ("" if s == 0 else "-") + "1"
+
+        return ("" if s == 0 else ("-" if not space else " - ")) + mtxt.fc(c) + (mtxt.pow_text("a", ap) if ap != 0 else "") + (mtxt.k_t("a", 2) if akp == 0 else "") + \
+               (mtxt.pow_text("b", bp) if bp != 0 else "") + (mtxt.k_t("b", 2) if bkp == 0 else "")
+
+    def get_param_sub(t1, t2):
+        c1, s1, ap1, akp1, bp1, bkp1 = t1
+        c2, s2, ap2, akp2, bp2, bkp2 = t2
+
+        c = int(c1/c2)
+        s = s1 if s2 == 0 else 1 - s1
+        ap = ap1 - ap2
+        bp = bp1 - bp2
+        akp = akp1 if akp2 == 1 else 1
+        bkp = bkp1 if bkp2 == 1 else 1
+
+        return c, s, ap, akp, bp, bkp
+
+    atpf = (n, 1 if (t1p[1] == 1 and t2p[1] == 1) else 0, min(t1p[2], t2p[2]), 0 if (t1p[3] == 0 and t2p[3] == 0) else 1,
+           min(t1p[4], t2p[4]), 0 if (t1p[5] == 0 and t2p[5] == 0) else 1)
+
+    atp1 = get_param_sub(t1p, atpf)
+    atp2 = get_param_sub(t2p, atpf)
+
+    return get_term_text(t1p) + (" + " if t2p[1] == 0 else "") + get_term_text(t2p, True) , get_term_text(atpf) + " * " + \
+           mtxt._(get_term_text(atp1) + (" + " if atp2[1] == 0 else "") + get_term_text(atp2, True))
 
 def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij445():
     # Построй в одной системе координат графики функций:  y = x^-2, y = x^-3 и y = x^-4
@@ -17,7 +3373,7 @@ def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij445():
 def kakovyi_oblast_opredelenij_i_oblast_znachenij_funktsii444():
     # каковы область определений и область значений функции y = x^-3 (n=[0, 10])
     k = rnd.randint(2, 9)
-    return "какова область определения и область значений функции y=x^-" + str(k), \
+    return "y=x^-" + str(k), \
            "область определения: вся числовая ось, область значений: " + (
            "любое число" if k % 2 != 0 else "[0, +бесконечность]")
 
@@ -181,7 +3537,7 @@ def vozrastaet_ili_ubyivaet_funktsiya():
 
     return "y=x^" + str(k) + " на участке " + ucs, answer
 
-def ne_vyipolnyaya_postroenij_najdite_tochku_peresecheniya_grafikov_linejnoj_funktsii():
+def ne_vyipolnyaya_postroenij_najdite_tochku_peresecheniya_grafikov_linejnoj_funktsii474():
     k1 = rnd.randint(-10, 10)
     b1 = rnd.randint(-10, 10)
     k2 = rnd.randint(-10, 10)
@@ -351,7 +3707,7 @@ def dokazhite_tozhdestvo():
 
     t1s = mtxt.f_t(mtxt.k_t(mtxt.fc(k1) + "a"), mtxt._(mtxt.k_t(mtxt.fc(k1) + "a") + "+" + mtxt.k_t(mtxt.fc(k2) + "b")))
     t2s = mtxt.f_t(mtxt.k_t(mtxt.fc(k2) + "b"), mtxt._(mtxt.k_t(mtxt.fc(k1) + "a") + "-" + mtxt.k_t(mtxt.fc(k2) + "b")))
-    t3s = mtxt.f_t("2" + mtxt.k_t(mtxt.fc(k1) + "ab"), mtxt._(mtxt.fc(k2) + "b" + "-" + mtxt.fc(k1) + "a"))
+    t3s = mtxt.f_t("2" + mtxt.k_t(mtxt.fc(k1*k2) + "ab"), mtxt._(mtxt.fc(k2) + "b" + "-" + mtxt.fc(k1) + "a"))
 
     right = mtxt.f_t( mtxt._(mtxt.k_t(mtxt.fc(k1) + "a") + mtxt.p0m1(1-s) + mtxt.k_t(mtxt.fc(k2) + "b")),
                       mtxt._(mtxt.k_t(mtxt.fc(k1) + "a") + mtxt.p0m1(s) + mtxt.k_t(mtxt.fc(k2) + "b")))
@@ -671,7 +4027,7 @@ def vozvedenie_chisladrobi_v_otritsatelnuyu_stepen():
     return text, answer
 
 
-def dana_funktsiya_v_kakoj_tochki_grafik_peresekaet_os():
+def dana_funktsiya_v_kakoj_tochki_grafik_peresekaet_os474():
     k = mrnd.rnd_w(-10, 10, [0])
     m = rnd.randint(1, 5)
     b = k * m
@@ -1874,14 +5230,6 @@ def slojit_logarithmy_s_raznymy_osnovaniyami():
 
     return "log" + str(osn) + "->" + str(pow(osn, p1)) + " + log" + str(pow(osn, po)) + "->" + str(pow(osn, p2_n)), s
 
-def preobrazovat_obyknovennuyu_drob_v_desyatichnuyu():
-    # Сгенерируем дробь
-    n = rnd.choice(lgu.get_simple_numnbers()[:6])
-    d = rnd.choice(lgu.get_simple_numnbers()[:4])
-    while d == n:
-        d = rnd.choice(lgu.get_simple_numnbers()[:4])
-
-    return lgu.get_fraction_str((0, n, d)), lgu.drob_to_dec(n, d)
 
 def zapishi_vyrajenie_v_vide_stepeni_s_rac_pokazatelem():
 
@@ -1993,7 +5341,7 @@ def naydi_naklon_pryamoy_po_dvum_tochkam():
     x1 = rnd.randint(-7, 7)
     y1 = rnd.randint(-7, 7)
     l = rnd.randint(2, 5)
-    x2 = x1 + k * l
+    x2 = x1 + l
     y2 = y1 + k * l
     return "(" + str(x1) + ", " + str(y1) + ") и (" + str(x1) + ", " + str(y2) + ")", str(k)
 
@@ -2618,9 +5966,6 @@ def raspoloji_drobi_v_poryadke_vozrostania():
     ans = "нет ответа"
     return str([str(rnd.randint(1, 10)) + "/" + str(rnd.randint(2, 20)) for i in range(c)]), ans
 
-def reshi_equation_system_m1():
-    ans = "нет ответа"
-    return "", ans
 
 def sloji_drobi():
     c1 = rnd.randint(1, 10)

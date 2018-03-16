@@ -20,7 +20,7 @@ def validate_unique_concept_tlt(value):
 class Grade(models.Model):
     code = models.CharField(max_length=200, unique=True)
     tlt = models.CharField(max_length=200)
-    concepts = models.ManyToManyField('Concept')
+    concepts = models.ManyToManyField('Concept', through='ConceptInGrade', blank=True)
 
     def __str__(self):
         return self.tlt
@@ -34,10 +34,13 @@ class Tag(models.Model):
 
 
 class Task(models.Model):
+    default_version = 1
+
     code = models.CharField(max_length=200, unique=True)
     tlt = models.CharField(max_length=200)
     tags = models.ManyToManyField(Tag, blank=True)
     example = models.CharField(max_length=200, blank=True)
+    ver = models.PositiveIntegerField(blank=False, default=default_version)
 
     def __init__(self, *args, **kwargs):
         super(Task, self).__init__(*args, **kwargs)
@@ -82,6 +85,13 @@ class TaskInConcept(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE)
     order = models.PositiveIntegerField(blank=True)
 
+
+class ConceptInGrade(models.Model):
+    concept = models.ForeignKey(Concept, on_delete=models.CASCADE)
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
+    order = models.PositiveIntegerField(blank=True)
+
+
 class Student(models.Model):
     login = models.CharField(max_length=200, primary_key=True)
     name = models.CharField(max_length=200)
@@ -89,16 +99,49 @@ class Student(models.Model):
     def __str__(self):
         return self.login
 
+
 class Session(models.Model):
-    student = models.ForeignKey(Student)
-    tasks = models.ManyToManyField(Task, through='TaskInSession')
+    student = models.ForeignKey(Student, blank=True, null=True)
+    date = models.DateField(auto_now_add=True)
 
     def __str__(self):
-        return self.student.name + " (заданий: " + str(self.tasks.count()) + ")"
+        if not self.student is None:
+            return self.student.name + ": " + str(self.date)
+        else:
+            return "no user: " + str(self.date)
 
-class TaskInSession(models.Model):
+
+class TaskSessionGroup(models.Model):
     session = models.ForeignKey(Session, on_delete=models.CASCADE)
-    task = models.ForeignKey(Task, on_delete=models.CASCADE)
-    count = models.IntegerField()
+    task = models.ForeignKey(Task, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.PositiveIntegerField(default=0)
+    tlt_text = models.CharField(max_length=200)
 
+    def save(self, force_insert=False, force_update=False, using=None,
+             update_fields=None):
+        if self.task != None:
+            self.tlt_text = self.task.tlt
+        super(TaskSessionGroup, self).save(force_insert, force_update, using, update_fields)
+
+    def __str__(self):
+        if not self.session.student is None:
+            res = self.session.student.name
+        else:
+            res = "no user"
+        return res + " " + str(self.session.date) + " " + str(self.order) + ": " + self.tlt_text
+
+
+class TaskText(models.Model):
+    text = models.CharField(max_length=1000)
+    atext = models.CharField(max_length=1000)
+    order = models.PositiveIntegerField(default=0)
+    group = models.ForeignKey(TaskSessionGroup, on_delete=models.CASCADE)
+
+    def __str__(self):
+        trimmed_text = (self.text[:100] + '..') if len(self.text) > 100 else self.text
+        if not self.group.session.student is None:
+            res = self.group.session.student.name
+        else:
+            res = "no user"
+        return res + " " + str(self.group.session.date) + ": " + str(self.group.order) + " " + self.group.tlt_text + ": "\
+               +  str(self.order) + " " + trimmed_text

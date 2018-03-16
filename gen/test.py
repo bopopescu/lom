@@ -4,89 +4,69 @@ import gen.genutils.math_factors as mf
 import gen.genutils.math_polynomial as pol
 import random as rnd
 import math
+import gen.genutils.math_trig as tr
 
 MODE_GET = 0
 MODE_PROGRAM = 1
 
 #---- SETTIGNS------
-MODE = MODE_GET
-GET_COUNT = 5
+MODE = MODE_PROGRAM
+GET_COUNT = 1
 EXAMPLES_COUNT = 3
 #---- SETTIGNS------
 
 # -----INSERTION START----------------------
 
 tasks = [
-	{'kakie_iz_chisel_yavlyayutsya_otritstalnyimi_polozhitelnyimi_neotritsatelnyimi_i_nepolozhitelnyimi': {'tlt': 'Какие из чисел являются отрицтальными, положительными, неотрицательными и неположительными'}},
-	{'kakie_iz_chisel_nepolozhitelnyie': {'tlt': 'какие из чисел неположительные'}},
-	{'kakie_iz_chisel_neotritstalnyie': {'tlt': 'какие из чисел неотрицтальные'}},
-	{'kakie_iz_chisel_polozhitelnyie': {'tlt': 'какие из чисел положительные'}},
-	{'kakie_iz_chisel_otritsatelnyie': {'tlt': 'какие из чисел отрицательные'}},
+	{'vyichislite659': {'tlt': 'Вычислите'}},
 ]
 
-def kakie_iz_chisel_yavlyayutsya_otritstalnyimi_polozhitelnyimi_neotritsatelnyimi_i_nepolozhitelnyimi():
-# Какие из чисел являются отрицтальными, положительными, неотрицательными и неположительными: 3; -6; -2и1/3; 4,7; 9/16; 0; -5,2; 10,14; 5/8
-    res = []
-    for mn in mrnd.mns:
-        c = rnd.randint(1, 4)
-        for i in range(c):
-            res.append(mrnd.get_ch_mn(mn))
-    rnd.shuffle(res)
+def vyichislite659():
+# Вычислите arccos(cos(+/-9)) // тоже самое с arcsin
+    c = 0#rnd.randint(0, 1)
+    x = mrnd.rnd_w(-10, 10, [0])
 
-    return " ".join([x[0] for x in res]), \
-        "положительные: " + " ".join([x[0] for x in res if 'положительные' in x[1]]) + "; " + \
-        "отрицательные: " + " ".join([x[0] for x in res if 'отрицательные' in x[1]]) + "; " + \
-        "неположительные: " + " ".join([x[0] for x in res if 'неположительные' in x[1]]) + "; " + \
-        "неотрицательные: " + " ".join([x[0] for x in res if 'неотрицательные' in x[1]]) + "; "
+    # Определяем в какой четверти лежит угол x
+    xgrad = x * 180 / math.pi
+    ch360 = int(xgrad) % 360
+    if ch360 > 0:
+        ch = 1 if ch360 < 90 else (2 if ch360 < 180 else (3 if ch360 < 270 else 4))
+    else:
+        ch = 4 if -ch360 < 90 else (3 if -ch360 < 180 else (2 if -ch360 < 270 else 1))
 
+    def get_n(a):
+        if a > 0:
+            return int(a // 1)
+        else:
+            return -int((-a + 1) // 1)
 
-def kakie_iz_chisel_nepolozhitelnyie():
-# какие из чисел неположительные: -1; 10; 4/3; -5/9; -1,0; 0; 3
-    res = []
-    for mn in mrnd.mns:
-        c = rnd.randint(1, 4)
-        for i in range(c):
-            res.append(mrnd.get_ch_mn(mn))
-    rnd.shuffle(res)
+    answer = ""
+    if c == 0:
+        if ch in [1, 2]:
+            n = get_n(x/(2 * math.pi))
+            answer = str(x) + ((mtxt.fc(int(-2 * n), False) + "pi") if n != 0 else "")
+        if ch == 3:
+            n = get_n(x/(4 * math.pi) - 1/4)
+            nsh = get_n(x/(2 * math.pi) - 1/2 - 2 * n)
+            answer = ((mtxt.fc(int(2 + 4 * n + 2 * nsh)) + "pi") if ((2 + 4 * n + 2 * nsh) != 0) else "") + mtxt.s(-x)
+        if ch == 4:
+            n = get_n(x/(4 * math.pi) + 1/8)
+            nsh = get_n(x/(2 * math.pi) + 1/4 - 2 * n)
+            answer = ((mtxt.fc(int(4 * n + 2 * nsh)) + "pi") if (4 * n + 2 * nsh != 0) else "") + mtxt.s(-x)
 
-    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'неположительные' in x[1]])
-
-
-def kakie_iz_chisel_neotritstalnyie():
-# какие из чисел неотрицтальные: -1; 10; 4/3; -5/9; -1,0; 0; 3
-    res = []
-    for mn in mrnd.mns:
-        c = rnd.randint(1, 4)
-        for i in range(c):
-            res.append(mrnd.get_ch_mn(mn))
-    rnd.shuffle(res)
-
-    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'неотрицательные' in x[1]])
-
-
-
-def kakie_iz_chisel_polozhitelnyie():
-# какие из чисел положительные: -1; 10; 4/3; -5/9; -1,0; 0; 3
-    res = []
-    for mn in mrnd.mns:
-        c = rnd.randint(1, 4)
-        for i in range(c):
-            res.append(mrnd.get_ch_mn(mn))
-    rnd.shuffle(res)
-
-    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'положительные' in x[1]])
+    if c == 1:
+        if ch in [4, 1]:
+            n = get_n(x/(2 * math.pi))
+            answer = str(x) + mtxt.fc(int(-2 * n), False) + "pi"
+        if ch == 2:
+            pass
+        if ch == 3:
+            pass
 
 
-def kakie_iz_chisel_otritsatelnyie():
-# какие из чисел отрицтальные: -1; 10; 4/3; -5/9; -1,0; 0; 3
-    res = []
-    for mn in mrnd.mns:
-        c = rnd.randint(1, 4)
-        for i in range(c):
-            res.append(mrnd.get_ch_mn(mn))
-    rnd.shuffle(res)
+    return ("arccos" if c == 0 else "arcsin") + mtxt._(("cos" if c == 0 else "sin") + mtxt._(x)), \
+          answer
 
-    return " ".join([x[0] for x in res]), " ".join([x[0] for x in res if 'отрицательные' in x[1]])
 
 # -----INSERTION END-----------------------
 
@@ -146,4 +126,3 @@ if MODE == MODE_PROGRAM:
             task_text, answer_text = method()
             text += "\t" + str(j + 1) + ". " + task_text + "\n" + "Ответ: " + answer_text + "\n"
     print(text)
-

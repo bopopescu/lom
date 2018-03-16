@@ -2,8 +2,13 @@ from django.shortcuts import render
 import gen.lib as l
 import json
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import user_passes_test
+import datetime
+import catalog.models as m
 
 FROM_CODE = False
+
 
 def filter_grades():
     filtered_grades = {}
@@ -18,29 +23,28 @@ def filter_grades():
             filtered_grades[g] = new_grade
     return filtered_grades
 
+
 def updateParamsFromDatabase():
     if FROM_CODE:
         return
-    import catalog.models as cModels
 
     l.grades = {}
     l.concepts = {}
     l.tasks = {}
     l.task_order_in_concept = {}
 
-    for t in cModels.Task.objects.all():
+    for t in m.Task.objects.all():
         if getattr(l, t.code, "__none") != "__none":
             ex = t.example.replace("'", "")
             ex = (ex[:100] + '..') if len(ex) > 100 else ex
             l.tasks[t.code] = {'title': t.tlt, 'example': ex}
             l.tasks[t.code]['orders'] = {}
 
-    for c in cModels.Concept.objects.all():
-
+    for c in m.Concept.objects.all():
         tasks_array = []
         for t in c.tasks.all():
             if t.code in l.tasks:
-                tic = cModels.TaskInConcept.objects.get(task=t, concept=c)
+                tic = m.TaskInConcept.objects.get(task=t, concept=c)
                 order = tic.order
                 tasks_array.append((t.code, order))
 
@@ -54,114 +58,174 @@ def updateParamsFromDatabase():
             l.concepts[c.code] = {'public': c.public, 'title': c.tlt}
             l.concepts[c.code]['tasks'] = [t_code for t_code, t_order in tasks_array]
 
-    for g in cModels.Grade.objects.all():
+    for g in m.Grade.objects.all():
         l.grades[g.code] = {'title': g.tlt}
         concepts_array = []
         for c in g.concepts.all():
             if c.code in l.concepts:
-                concepts_array.append(c.code)
-        l.grades[g.code]['concepts'] = concepts_array
+                cig = m.ConceptInGrade.objects.get(grade=g, concept=c)
+                concepts_array.append((c.code, cig.order))
+        concepts_array.sort(key=lambda x: x[1])
+        l.grades[g.code]['concepts'] = [x[0] for x in concepts_array]
 
 
+def is_teacher(user):
+    if user:
+        return user.groups.filter(name='teachers').exists()
+    else:
+        return False
+
+
+@login_required(login_url='/login/')
+@user_passes_test(is_teacher, login_url='/login/')
 def index(request):
     updateParamsFromDatabase()
 
-    filtered_grades = filter_grades();
+    filtered_grades = filter_grades()
     return render(request, 'catalog.html', context={
         'grades': json.dumps(filtered_grades),
         'concepts': json.dumps({c:l.concepts[c] for c in l.concepts.keys() if l.concepts[c]['public']}),
         'tasks': json.dumps(l.tasks),
-        'concept_id': '',
-        'tasks_group': '',
-        'session': '',
-        'user': '',
     })
 
-
-def get_session(request, session):
+@login_required(login_url='/login/')
+@user_passes_test(is_teacher, login_url='/login/')
+def get_session(request, session_id):
     updateParamsFromDatabase()
-    filtered_grades = filter_grades();
+    filtered_grades = filter_grades()
 
-    from catalog.models import Session, TaskInSession
-    if Session.objects.filter(pk=session).exists():
-        session_obj = Session.objects.get(pk=session)
-        student_name = session_obj.student.name
 
-        tasks_array = []
-        for t in session_obj.tasks.all():
-            if t.code in l.tasks:
-                tis = TaskInSession.objects.get(task=t, session=session_obj)
-                order = tis.order
-                count = tis.count
-                tasks_array.append((t.code, order, count))
+    objSession = m.Session.objects.get(pk=session_id)
 
-            def get_task_order(t1):
-                t_code, t_order, t_count = t1
-                return t_order
-
-        tasks_array = sorted(tasks_array, key=get_task_order, reverse=False)
-
-        session_data = {'tasks': tasks_array}
+    s = {}
+    s['date'] = objSession.date
+    if objSession.student:
+        s['student_name'] = objSession.student.name
+        s['student_login'] = objSession.student.login
     else:
-        student_name = ""
-        session_data = {'tasks': []}
+        s['student_name'] = ""
+        s['student_login'] = ""
 
+    session_groups_list = []
+    for tg in m.TaskSessionGroup.objects.all():
+        session = m.Session.objects.get(pk=session_id)
+        if tg.session == session:
+            tg_dict = {}
+            tg_dict['tlt'] = tg.tlt_text
+            tg_dict['task_code'] = tg.task.code
+
+            texts_list = []
+            for t in m.TaskText.objects.all():
+                if t.group == tg:
+                    texts_list.append((t.text, t.atext, t.order))
+
+            texts_list.sort(key=lambda x: x[2])
+            tg_dict['texts'] = [(x[0], x[1]) for x in texts_list]
+            tg_dict['order'] = tg.order
+
+            session_groups_list.append(tg_dict)
+
+    session_groups_list.sort(key=lambda x: x['order'])
+    for x in session_groups_list:
+        x.pop('order', None)
+    s['groups'] = session_groups_list
+
+    def date_converter(obj):
+        if isinstance(obj, datetime.date):
+            return obj.__str__()
 
     return render(request, 'catalog.html', context={
         'grades': json.dumps(filtered_grades),
         'concepts': json.dumps({c:l.concepts[c] for c in l.concepts.keys() if l.concepts[c]['public']}),
         'tasks': json.dumps(l.tasks),
-        'concept_id': json.dumps(request.GET.get('concept', None)),
-        'tasks_group': '',
-        'session': json.dumps(session_data),
-        'user': json.dumps(student_name),
-    })
-
-
-def get_concept(request):
-    updateParamsFromDatabase()
-
-    c = request.GET.get('concept', None)
-    filtered_grades = filter_grades();
-
-    return render(request, 'catalog.html', context={
-        'grades': json.dumps(filtered_grades),
-        'concepts': json.dumps({c:l.concepts[c] for c in l.concepts.keys() if l.concepts[c]['public']}),
-        'tasks': json.dumps(l.tasks),
-        'concept_id': json.dumps(request.GET.get('concept', None)),
-        'tasks_group': '',
-        'session': '',
-        'user': '',
-    })
-
-
-def get_tasks_group(request):
-    updateParamsFromDatabase()
-
-    params = request.GET.dict()
-    filtered_grades = filter_grades();
-    return render(request, 'catalog.html', context={
-        'grades': json.dumps(filtered_grades),
-        'concepts': json.dumps({c:l.concepts[c] for c in l.concepts.keys() if l.concepts[c]['public']}),
-        'tasks': json.dumps(l.tasks),
-        'tasks_group': json.dumps(params, None),
-        'concept_id': '',
-        'session': '',
-        'user': '',
+        'session': json.dumps(s, default=date_converter),
     })
 
 
 def get_tasks(request):
     data = {}
-    data['tasks'] = {}
 
+    task_groups_list = []
     for task, count in request.GET.items():
         method = getattr(l, task, "__none")
         if method != "__none":
-            new_tasks = []
+            tg_dict = {}
+            tg_dict['task_code'] = task
+            texts_list = []
             for i in range(int(count)):
-                task_text, answer_text = method()
-                new_tasks += [task_text]
-            data['tasks'][task] = new_tasks
+                texts_list.append(method())
+            tg_dict['texts'] = texts_list
+            t = m.Task.objects.get(code=task)
+            tg_dict['tlt'] = t.tlt
+            task_groups_list.append(tg_dict)
+
+    data['tasks'] = task_groups_list
 
     return JsonResponse(data)
+
+
+def get_next_student(request):
+    s = request.GET['student']
+    st = m.Student.objects
+    if s != "":
+        st = st.filter(login=s)
+    st = st.exclude(session__date__exact = datetime.datetime.now().date()).first()
+
+    data = {'login': st.login, 'name': st.name} if st is not None else {'login': "", 'name': ""}
+
+    return JsonResponse(data)
+
+
+def get_view_session(request, session):
+    objSession = m.Session.objects.get(pk=session)
+
+    tasks = {}
+    for g in m.TaskSessionGroup.objects.filter(session=session):
+
+        texts = {}
+        for t in m.TaskText.objects.filter(group=g.id):
+            ex = t.text.replace("'", "")
+            texts[t.id] = {
+                'text': ex,
+                'atext': t.atext,
+                'order': t.order,
+            }
+
+        tasks[g.id] = {
+            'task_code': g.task.code,
+            'tlt_text': g.tlt_text,
+            'order': g.order,
+            'texts': texts,
+        }
+
+    student_name = objSession.student.name if objSession.student is not None else ""
+
+    return render(request, 'viewsession.html', context={
+        'student': json.dumps(student_name),
+        'date': json.dumps(str(objSession.date)),
+        'tasks': json.dumps(tasks),
+    })
+
+
+def add_session(request):
+    data = json.loads(request.body.decode('utf-8'))
+
+    # Создаем сессию
+    st = m.Student.objects.filter(login = data['student']).first()
+    s = m.Session(student=st)
+    s.save()
+
+    # Создаем группы
+    for i, task_dict in enumerate(data['tasks']):
+        task = m.Task.objects.get(code=task_dict['task_code'])
+        tg = m.TaskSessionGroup(session=s, task=task, order=i)
+        tg.save()
+
+        # Создаем тексты
+        texts = data['tasks'][i]['texts']
+        for i, txt in enumerate(texts):
+            t = m.TaskText(group=tg, text=txt[0], atext=txt[1], order=i+1)
+            t.save()
+
+    response = {'session': s.id}
+    return JsonResponse(response)

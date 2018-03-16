@@ -127,3 +127,9 @@ def s(a):
     else:
         return ("+" if a > 0 else "") + str(a)
 
+def ug(n, d):
+    if d == 1:
+        return "0" if n == 0 else ((str(n) if n not in [1, -1] else "") + "pi")
+    else:
+        return "0" if n == 0 else ((str(n) if n not in [1, -1] else "") + "pi/" + str(d))
+

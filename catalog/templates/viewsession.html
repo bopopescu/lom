@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+
+
+    <script type="text/javascript">
+        var student_name = JSON.parse('{{ student|safe }}');
+        var date = JSON.parse('{{ date|safe }}');
+        var tasks = JSON.parse('{{ tasks|safe }}');
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $(document).attr("title", student_name + ": " + date);
+
+            i = 0;
+            for(var g in tasks){
+                var $g_template = $('#task_group_template') ,
+                    $g_clone = $g_template
+                        .clone()
+                        .removeClass('d-none')
+                        .removeAttr('id')
+                        .text((i + 1).toString() + ". " + tasks[g].tlt_text)
+                        .insertBefore($g_template);
+                i++;
+
+                j = 0;
+                for(var t in tasks[g].texts) {
+                    var $t_template = $('#task_template') ,
+                        $t_clone = $t_template
+                            .clone()
+                            .removeClass('d-none')
+                            .removeAttr('id')
+                            .text((j + 1).toString() + ". " + tasks[g].texts[t].text)
+                            .insertBefore($g_template);
+                    j++;
+                }
+
+            }
+        })
+    </script>
+
+    <style>
+        .taskgroup {
+            font-weight: bold;
+        }
+    </style>
+
+    <title></title>
+</head>
+<body>
+  <div class="container">
+      <div id="task_group_template" class="d-none row taskgroup">
+          <div class="col">1.Заголовок задачи
+              <div id="task_template" class="d-none row px-4 task">
+                  <div class="col">1. Что нужно сделать</div>
+              </div>
+          </div>
+      </div>
+  </div>
+</body>
+</html>
