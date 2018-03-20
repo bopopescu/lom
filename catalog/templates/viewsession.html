@@ -8,38 +8,50 @@
 
 
     <script type="text/javascript">
-        var student_name = JSON.parse('{{ student|safe }}');
-        var date = JSON.parse('{{ date|safe }}');
-        var tasks = JSON.parse('{{ tasks|safe }}');
+        var session = JSON.parse('{{ session|safe }}');
     </script>
 
     <script type="text/javascript">
         $(document).ready(function(){
-            $(document).attr("title", student_name + ": " + date);
+            // Устанавливает заголовок страницы
+            $(document).attr("title", session['student_name'] + ": " + session['date']);
 
-            i = 0;
-            for(var g in tasks){
-                var $g_template = $('#task_group_template') ,
+            // Устанавливаем заметку к сессии
+            if (session['note'].length != 0){
+                $('#session-note').removeClass('d-none')
+                $('#session-note-body').text(session['note'])
+            }
+
+            // Заполняем задания
+            groups = session['groups'];
+            for(i = 0; i < groups.length; i++){
+                var $g_template = $('#group_template') ,
                     $g_clone = $g_template
                         .clone()
                         .removeClass('d-none')
                         .removeAttr('id')
-                        .text((i + 1).toString() + ". " + tasks[g].tlt_text)
+                        .text((i + 1).toString() + ". " + groups[i]['tlt'])
                         .insertBefore($g_template);
-                i++;
 
-                j = 0;
-                for(var t in tasks[g].texts) {
+                if (groups[i]['note'].length > 0) {
+                    var $gn_template = $('#group_note_template') ,
+                        $gn_clone = $gn_template
+                            .clone()
+                            .removeClass('d-none')
+                            .removeAttr('id')
+                            .text()
+                            .insertBefore($g_template);
+                }
+
+                for(j = 0; j < groups[i].texts.length; j++) {
                     var $t_template = $('#task_template') ,
                         $t_clone = $t_template
                             .clone()
                             .removeClass('d-none')
                             .removeAttr('id')
-                            .text((j + 1).toString() + ". " + tasks[g].texts[t].text)
+                            .text((j + 1).toString() + ". " + groups[i]['texts'][j][0])
                             .insertBefore($g_template);
-                    j++;
                 }
-
             }
         })
     </script>
@@ -54,12 +66,13 @@
 </head>
 <body>
   <div class="container">
-      <div id="task_group_template" class="d-none row taskgroup">
-          <div class="col">1.Заголовок задачи
-              <div id="task_template" class="d-none row px-4 task">
-                  <div class="col">1. Что нужно сделать</div>
-              </div>
-          </div>
+      <div class="row d-none" id="session-note">
+          <p id="session-note-caption"><b>Напутствие:</b></p>
+          <p id="session-note-body"></p>
+      </div>
+      <div id="group_template" class="d-none row taskgroup"></div>
+      <div id="task_template" class="d-none row px-4 task"></div>
+      <div id="group_note_template" class="d-none row px-1"></div>
       </div>
   </div>
 </body>

@@ -103,6 +103,7 @@ class Student(models.Model):
 class Session(models.Model):
     student = models.ForeignKey(Student, blank=True, null=True)
     date = models.DateField(auto_now_add=True)
+    note = models.TextField(null=True, blank=True)
 
     def __str__(self):
         if not self.student is None:
@@ -116,6 +117,7 @@ class TaskSessionGroup(models.Model):
     task = models.ForeignKey(Task, null=True, blank=True, on_delete=models.SET_NULL)
     order = models.PositiveIntegerField(default=0)
     tlt_text = models.CharField(max_length=200)
+    note = models.TextField(null=True, blank=True)
 
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
@@ -136,6 +138,7 @@ class TaskText(models.Model):
     atext = models.CharField(max_length=1000)
     order = models.PositiveIntegerField(default=0)
     group = models.ForeignKey(TaskSessionGroup, on_delete=models.CASCADE)
+    note = models.TextField(null=True, blank=True)
 
     def __str__(self):
         trimmed_text = (self.text[:100] + '..') if len(self.text) > 100 else self.text

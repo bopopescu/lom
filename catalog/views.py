@@ -75,6 +75,48 @@ def is_teacher(user):
     else:
         return False
 
+def get_session_data(session_id):
+    objSession = m.Session.objects.get(pk=session_id)
+
+    s = {}
+    s['date'] = objSession.date
+    if objSession.student:
+        s['student_name'] = objSession.student.name
+        s['student_login'] = objSession.student.login
+    else:
+        s['student_name'] = ""
+        s['student_login'] = ""
+    s['note'] = objSession.note
+
+    session_groups_list = []
+    for tg in m.TaskSessionGroup.objects.all():
+        session = m.Session.objects.get(pk=session_id)
+        if tg.session == session:
+            tg_dict = {}
+            tg_dict['tlt'] = tg.tlt_text
+            tg_dict['task_code'] = tg.task.code
+            tg_dict['note'] = tg.note
+
+            texts_list = []
+            for t in m.TaskText.objects.all():
+                if t.group == tg:
+                    texts_list.append((t.text, t.atext, t.note, t.order))
+
+            texts_list.sort(key=lambda x: x[3])
+            tg_dict['texts'] = [(x[0], x[1], x[2]) for x in texts_list]
+            tg_dict['order'] = tg.order
+
+            session_groups_list.append(tg_dict)
+
+    session_groups_list.sort(key=lambda x: x['order'])
+    for x in session_groups_list:
+        x.pop('order', None)
+    s['groups'] = session_groups_list
+    return s
+
+def date_converter(obj):
+    if isinstance(obj, datetime.date):
+        return obj.__str__()
 
 @login_required(login_url='/login/')
 @user_passes_test(is_teacher, login_url='/login/')
@@ -94,51 +136,11 @@ def get_session(request, session_id):
     updateParamsFromDatabase()
     filtered_grades = filter_grades()
 
-
-    objSession = m.Session.objects.get(pk=session_id)
-
-    s = {}
-    s['date'] = objSession.date
-    if objSession.student:
-        s['student_name'] = objSession.student.name
-        s['student_login'] = objSession.student.login
-    else:
-        s['student_name'] = ""
-        s['student_login'] = ""
-
-    session_groups_list = []
-    for tg in m.TaskSessionGroup.objects.all():
-        session = m.Session.objects.get(pk=session_id)
-        if tg.session == session:
-            tg_dict = {}
-            tg_dict['tlt'] = tg.tlt_text
-            tg_dict['task_code'] = tg.task.code
-
-            texts_list = []
-            for t in m.TaskText.objects.all():
-                if t.group == tg:
-                    texts_list.append((t.text, t.atext, t.order))
-
-            texts_list.sort(key=lambda x: x[2])
-            tg_dict['texts'] = [(x[0], x[1]) for x in texts_list]
-            tg_dict['order'] = tg.order
-
-            session_groups_list.append(tg_dict)
-
-    session_groups_list.sort(key=lambda x: x['order'])
-    for x in session_groups_list:
-        x.pop('order', None)
-    s['groups'] = session_groups_list
-
-    def date_converter(obj):
-        if isinstance(obj, datetime.date):
-            return obj.__str__()
-
     return render(request, 'catalog.html', context={
         'grades': json.dumps(filtered_grades),
         'concepts': json.dumps({c:l.concepts[c] for c in l.concepts.keys() if l.concepts[c]['public']}),
         'tasks': json.dumps(l.tasks),
-        'session': json.dumps(s, default=date_converter),
+        'session': json.dumps(get_session_data(session_id), default=date_converter),
     })
 
 
@@ -151,9 +153,11 @@ def get_tasks(request):
         if method != "__none":
             tg_dict = {}
             tg_dict['task_code'] = task
+            tg_dict['note'] = ""
             texts_list = []
             for i in range(int(count)):
-                texts_list.append(method())
+                text, answer = method()
+                texts_list.append((text, answer, ""))
             tg_dict['texts'] = texts_list
             t = m.Task.objects.get(code=task)
             tg_dict['tlt'] = t.tlt
@@ -177,33 +181,8 @@ def get_next_student(request):
 
 
 def get_view_session(request, session):
-    objSession = m.Session.objects.get(pk=session)
-
-    tasks = {}
-    for g in m.TaskSessionGroup.objects.filter(session=session):
-
-        texts = {}
-        for t in m.TaskText.objects.filter(group=g.id):
-            ex = t.text.replace("'", "")
-            texts[t.id] = {
-                'text': ex,
-                'atext': t.atext,
-                'order': t.order,
-            }
-
-        tasks[g.id] = {
-            'task_code': g.task.code,
-            'tlt_text': g.tlt_text,
-            'order': g.order,
-            'texts': texts,
-        }
-
-    student_name = objSession.student.name if objSession.student is not None else ""
-
     return render(request, 'viewsession.html', context={
-        'student': json.dumps(student_name),
-        'date': json.dumps(str(objSession.date)),
-        'tasks': json.dumps(tasks),
+        'session': json.dumps(get_session_data(session), default=date_converter),
     })
 
 

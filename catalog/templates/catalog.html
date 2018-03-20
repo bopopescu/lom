@@ -545,6 +545,10 @@
 
             function updatePreview() {
                 $('#preview').find('.task-item').remove();
+                if (session != undefined){
+                    $('#session-note').text(session['note'])
+                }
+
 
                 for (i = 0; i < sel_tasks.length; i++) {
                     task = sel_tasks[i]['task_code'];
@@ -558,6 +562,8 @@
 
                     $clone.find('.tasks-list b')
                         .text((i + 1).toString() + ". " + sel_tasks[i]['tlt']);
+                    $clone.find('.tasks-list .group-note')
+                        .text(sel_tasks[i]['note']);
                     $clone.find('.tasks-list button')
                         .attr('id', task)
                         .on('click', onRemoveTaskFromPreviewClick);
@@ -739,11 +745,18 @@
             <div id="preview" class="d-none col-sm-12 col-lg-4 py-4 px-3">
 
                 <div class="row">
+                    <button class="">+Заметка</button>
+                    <textarea id="session-note"></textarea>
+                </div>
+
+                <div class="row">
                     <div id="taskItemTemplate" class=" d-none col-12 py-2">
                         <div class="row tasks-list">
                             <div class="col-12 item-head">
                                 <b></b>
                                 <button class="task-remove-button" type="">Убрать</button>
+                                <button>+Заметка</button>
+                                <textarea class="group-note"></textarea>
                             </div>
                         </div>
                     </div>
@@ -751,7 +764,7 @@
 
                 <div id="buttons" class="row">
                     <div class="col-12 my-1">
-                        <button id="btn-viewsession" type="button" class="btn btn-primary btn-lg center-block">Ссылка на это задание</button>
+                        <button id="btn-viewsession" type="button" class="btn btn-primary btn-lg center-block">Отравить задание</button>
                     </div>
                 </div>
 
