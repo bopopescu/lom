@@ -145,14 +145,26 @@
         c = '{{ session|safe }}'
         if (c != '') {
             var session = JSON.parse(c);
+        } else {
+            var session = {'date': "", 'student_name':"", 'student_login':"", 'note':"", 'groups':[]};
         }
 
-        sel_tasks = [];
+        function is_session_empty(){
+            if ((session['date'] == "") && (session['student_name'] == "") && (session['student_login'] == "") && (session['note'] == "") && (session['groups'].length == 0) ) {
+                return true;
+            } else {
+                return false;
+            }
+        }
 
-        function get_index_in_sel_tasks(task_code) {
+        function get_group_index(task_code) {
             res = -1;
-            for (kk = 0; kk < sel_tasks.length; kk++) {
-                if (sel_tasks[kk]['task_code'] == task_code) {
+            if (is_session_empty()) {
+                return res;
+            }
+            groups = session['groups'];
+            for (kk = 0; kk < groups.length; kk++) {
+                if (groups[kk]['task_code'] == task_code) {
                     res = kk;
                     break;
                 }
@@ -160,19 +172,15 @@
             return res;
         }
 
-        function remove_from_sel_tasks(task_code) {
-            index_to_remove = get_index_in_sel_tasks(task_code);
+        function remove_group(task_code) {
+            index_to_remove = get_group_index(task_code);
             if (index_to_remove > -1) {
-                sel_tasks.splice(index_to_remove, 1);
+                session['groups'].splice(index_to_remove, 1);
             }
         }
     </script>
     <script type="text/javascript">
             $(document).ready(function() {
-
-                // Текущий ученик
-                student = {'login': "", 'name': ""};
-
                 // Заполняем лоции для переданного класса или класса по-умолчанию
                 default_grade = 'sedmoj';
                 if (grades[default_grade] !== undefined){
@@ -186,17 +194,15 @@
                 }
 
                 // Если загружаем не сессию
-                if (session === undefined) {
+                if (is_session_empty()) {
                     // Если были сохраненные в куках таски, то....
                     tasks_in_cookies = getTasksInCookies();
                     if (Object.keys(tasks_in_cookies).length > 0) {
-                        sel_tasks = [];
                         get_tasks_from_server(tasks_in_cookies);
                     } else {
                         updateLayout();
                     }
                 } else {
-                    sel_tasks = session['groups'];
                     updateLayout();
                     updatePreview();
                 }
@@ -222,7 +228,7 @@
                 $('#btn-viewsession').on('click', onViewSessionClick);
 
                 // Обновляем отображение ученика
-                if (session === undefined) {
+                if (is_session_empty()) {
                     s = $.cookie('student');
                     if (s != null) {
                         get_next_student_from_server(s);
@@ -230,7 +236,6 @@
                         updateStudent();
                     }
                 } else {
-                    student = {'login': session['student_login'], 'name': session['student_name']};
                     updateStudent();
                 }
                 $('#student-info').on('click', onStudentInfoClick);
@@ -264,7 +269,7 @@
                 $.ajax({
                     type: "POST",
                     url: '/ajax/addsession/',
-                    data: JSON.stringify({'tasks':sel_tasks, 'student': student['login']}),
+                    data: JSON.stringify({'session': session}),
                     dataType: 'json',
                     success: function (response) {
                         session_id = response['session'];
@@ -274,8 +279,8 @@
                 });
 
                 // Сбрасываем выбранного ученика (для него все сделано)
-                student['login'] = "";
-                student['name'] = "";
+                session['student_login'] = "";
+                session['student_name'] = "";
                 $.removeCookie('student');
                 updateStudent();
 
@@ -288,13 +293,24 @@
 
 
             function onRemoveTaskFromPreviewClick() {
-                remove_from_sel_tasks(event.target.id)
+                remove_group(event.target.id)
 
                 updateLayout();
                 updateTasks();
                 updatePreview();
                 updateCookies();
                 ga('send', 'event', 'Задание', 'Удаление');
+            }
+
+            function onGroupKeyUp() {
+                groupIndex = Number($(this).attr('name'));
+                session['groups'][groupIndex]['note'] = $(this).val();
+            }
+
+            function onSessionNoteKeyUp() {
+                session_note = $('#session-note');
+                text = session_note.val();
+                session['note'] = text;
             }
 
             function updateLayout() {
@@ -304,7 +320,7 @@
                     concept_selected = false;
                 }
 
-                task_selected = sel_tasks.length > 0;
+                task_selected = session['groups'].length > 0;
 
                 if (concept_selected == true) {
                     $('#tasks').removeClass('d-none');
@@ -380,7 +396,7 @@
                     data: tasks_to_obtain,
                     dataType: 'json',
                     success: function (data) {
-                        sel_tasks = sel_tasks.concat(data['tasks']);
+                        session['groups'] = session['groups'].concat(data['tasks']);
                         updateLayout();
                         updatePreview();
                         updateCookies();
@@ -395,11 +411,11 @@
                     data: {'student': st},
                     dataType: 'json',
                     success: function (data) {
-                        student['login'] = data['login'];
-                        student['name'] = data['name'];
+                        session['student_login'] = data['login'];
+                        session['student_name'] = data['name'];
                         updateStudent();
-                        if (student['login'].length > 0) {
-                            $.cookie('student', student['login'] , { expires: 1 });
+                        if (session['student_login'].length > 0) {
+                            $.cookie('student', session['student_login'] , { expires: 1 });
                         } else {
                             $.removeCookie('student');
                         }
@@ -414,8 +430,9 @@
                         $.removeCookie(c);
                     }
                 }
-                for (i = 0; i < sel_tasks.length; i++) {
-                    $.cookie(sel_tasks[i]['task_code'], sel_tasks[i]['texts'].length, { expires: 21 });
+                groups = session['groups'];
+                for (i = 0; i < groups.length; i++) {
+                    $.cookie(groups[i]['task_code'], groups[i]['texts'].length, { expires: 21 });
                 }
             }
 
@@ -425,15 +442,15 @@
                 new_value = $(this).attr('value');
 
                 // Если кликнули на ту же кнопку, то выходим
-                task_index = get_index_in_sel_tasks(changed_task);
+                task_index = get_group_index(changed_task);
                 if (task_index >= 0) {
-                    if (new_value == sel_tasks[task_index]['texts'].length) {
+                    if (new_value == session['groups'][task_index]['texts'].length) {
                         return false;
                     }
                 }
 
                 if (task_index != -1) {
-                    sel_tasks.splice(task_index, 1);
+                    session['groups'].splice(task_index, 1);
                 }
                 if (new_value == 0) {
                     updatePreview();
@@ -475,9 +492,9 @@
 
                 for (i = 0; i < concept_tasks.length; i++) {
                     task = concept_tasks[i];
-                    task_index = get_index_in_sel_tasks(task);
+                    task_index = get_group_index(task);
 
-                    // Подсвечиваем таски, которые есть в sel_tasks
+                    // Подсвечиваем таски, которые есть в session['groups']
                     if (task_index >= 0) {
                         $('#tasks ' + '#' + task + ' .item').addClass('active')
                     } else {
@@ -486,7 +503,7 @@
 
                     // Подсвечиваем нужную кнопку числа тасков
                     if (task_index >= 0) {
-                        tasks_count = sel_tasks[task_index]['texts'].length;
+                        tasks_count = session['groups'][task_index]['texts'].length;
                     } else {
                         tasks_count = 0;
                     };
@@ -545,15 +562,12 @@
 
             function updatePreview() {
                 $('#preview').find('.task-item').remove();
-                if (session != undefined){
-                    $('#session-note').text(session['note'])
-                }
+                groups = session['groups'];
+                var $template = $('#taskItemTemplate');
 
-
-                for (i = 0; i < sel_tasks.length; i++) {
-                    task = sel_tasks[i]['task_code'];
-                    var $template = $('#taskItemTemplate'),
-                        $clone = $template.clone()
+                for (i = 0; i < groups.length; i++) {
+                    task = groups[i]['task_code'];
+                    var $clone = $template.clone()
                             .removeClass('d-none')
                             .addClass('task-item')
                             .removeAttr('id')
@@ -561,26 +575,33 @@
                             .attr('name', task);
 
                     $clone.find('.tasks-list b')
-                        .text((i + 1).toString() + ". " + sel_tasks[i]['tlt']);
-                    $clone.find('.tasks-list .group-note')
-                        .text(sel_tasks[i]['note']);
-                    $clone.find('.tasks-list button')
+                        .text((i + 1).toString() + ". " + groups[i]['tlt']);
+                    $clone.find('.tasks-list .task-remove-button')
                         .attr('id', task)
                         .on('click', onRemoveTaskFromPreviewClick);
 
-                    task_items = sel_tasks[i]['texts'];
-
+                    task_items = groups[i]['texts'];
                     for (j = 0; j < task_items.length; j++) {
                         $clone.find('.tasks-list').append(
                             "<div class='col-12 item'><span>" + (j + 1).toString() + ". " + task_items[j][0] + ".</span><i>" + " Ответ: " + task_items[j][1] + "</i></div>"
                         );
                     }
+
+                    $clone.find('.tasks-list .group-note')
+                        .attr('name', i.toString())
+                        .text(groups[i]['note'])
+                        .on('keyup', onGroupKeyUp);
                 }
+
+                // Обновляем заметку к сессии
+                session_note = $('#session-note');
+                session_note.text(session['note']);
+                session_note.on('keyup', onSessionNoteKeyUp);
             }
 
             function updateStudent(){
-                if (student['name'].length > 0) {
-                    s = student['name'];
+                if (session['student_name'].length > 0) {
+                    s = session['student_name'];
                 } else {
                     s = "не выбран";
                 }
