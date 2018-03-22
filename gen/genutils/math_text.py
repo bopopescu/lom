@@ -133,3 +133,6 @@ def ug(n, d):
     else:
         return "0" if n == 0 else ((str(n) if n not in [1, -1] else "") + "pi/" + str(d))
 
+def quad_pol_to_str(coeffs):
+    an, ad, bn, bd, cn, cd = coeffs
+    return "x^2" + ("+" if bn > 0 else "") +f_t(bn, bd) + "x" + ("+" if cn > 0 else "") + f_t(cn, cd)

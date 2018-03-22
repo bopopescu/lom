@@ -9,6 +9,304 @@ import gen.genutils.math_trig as tr
 import statistics as st
 import math
 
+
+def reshite_uravnenie664():
+# Решите уравнение: (x - 1)(x+3/2)(x^2 - 6x - 7) = 0
+    c = rnd.randint(2, 4)
+    pk = rnd.randint(0, c - 1)
+
+    res = [] #(v, answer)
+    for i in range(c):
+        if i == pk:
+            t = rnd.randint(0, 2)
+            if t == 0:
+                a = ""
+                bu = mrnd.rnd_w(-10, 10, [0])
+                au = mrnd.rnd_w(-10, 10, [0, bu])
+                cu = int(pow(bu, 2) / (4 * au)) + rnd.randint(2, 5)
+                v = mtxt.fc(au) + "x^2" + mtxt.fc(bu, is_first=False) + "x" + mtxt.s(cu)
+
+            if t == 1:
+                t1 = rnd.randint(0, 1)
+                if t1 == 0:
+                    x = mrnd.rnd_w(-10, 10, [0])
+                    a = str(x)
+                    v = "x^2" + mtxt.fc(2 * x, is_first=False) + "x" + mtxt.s(pow(x, 2))
+                if t1 == 1:
+                    xn, xd = mf.s_fraction((mrnd.rnd_w(-5, 5, [0]), rnd.randint(2, 7)))
+                    a = mtxt.f_t(xn, xd)
+                    bun, bud = mf.s_fraction((2 * xn, xd))
+                    cun, cud = mf.s_fraction((pow(xn, 2), pow(xd, 2)))
+                    v = "x^2" + ("+" if bun > 0 else "") + mtxt.f_t(bun, bud) + "x" + ("+" if cun > 0 else "") + mtxt.f_t(cun, cud)
+            if t == 2:
+                t1 = rnd.randint(0, 1)
+                if t1 == 0:
+                    x1 = mrnd.rnd_w(-10, 10, [0])
+                    x2 = mrnd.rnd_w(-10, 10, [0, x1])
+                    a = ", ".join([str(x1), str(x2)])
+                    v = "x^2" + mtxt.fc(-(x1 + x2), is_first=False) + "x" + mtxt.s(x1 * x2)
+
+                if t1 == 1:
+                    x1n = mrnd.rnd_w(-5, 5, [0])
+                    x1d = mrnd.rnd_w(2, 5, [0, 1, x1n])
+                    x1n, x1d = mf.s_fraction((x1n, x1d))
+                    x2n = mrnd.rnd_w(-5, 5, [0, x1n])
+                    x2d = mrnd.rnd_w(2, 5, [0, 1, x2n, x2n])
+                    x2n, x2d = mf.s_fraction((x2n, x2d))
+
+                    a = ", ".join([mtxt.f_t(x1n, x1d), mtxt.f_t(x2n, x2d)])
+
+                    bun, bud = mf.s_fraction((-(x1n*x2d + x1d*x2n), x1d * x2d))
+                    cun, cud = mf.s_fraction((x1n * x2n, x1d * x2d))
+                    v = "x^2" + ("+" if bun > 0 else "") + mtxt.f_t(bun, bud) + "x" + ("+" if cun > 0 else "") + mtxt.f_t(cun, cud)
+        else:
+            t = rnd.randint(0, 1)
+            if t == 0:
+                r = mrnd.rnd_w(-10, 10, [0])
+                v = "x" + mtxt.s(-r)
+                a = str(r)
+            else:
+                k = mrnd.rnd_w(1, 5, [0])
+                n = mrnd.rnd_w(-10, 10, [0])
+                d = mrnd.rnd_w(2, 10, [0, n])
+                n, d = mf.s_fraction((n, d))
+                v = mtxt.fc(k) + "x" + ("+" if n < 0 else "") + mtxt.f_t(-n, d)
+                n, d = mf.s_fraction((n, d * k))
+                a = mtxt.f_t(n, d)
+
+        res.append((v, a))
+
+    return "".join(["(" + str(x[0]) + ")" for x in res]), ", ".join([x for x in set(x[1] for x in res) if x != ""])
+
+
+def sravnite():
+# Сравните tg3 и ctg2 // в радианах через pi
+    t = rnd.randint(0, 2)
+
+    f1 = rnd.randint(0, 1)
+    f2 = rnd.randint(0, 1)
+
+    n1 = rnd.randint(-3, 3)
+    d1 = rnd.randint(2, 6)
+    n1, d1 = mf.s_fraction((n1, d1))
+
+    n2 = rnd.randint(-3, 3)
+    d2 = rnd.randint(2, 6)
+    n2, d2 = mf.s_fraction((n2, d2))
+
+    v1 = ("tg" if f1 == 0 else "ctg") + mtxt._(mtxt.f_t(n1, d1) + "*pi")
+    v2 = ("tg" if f2 == 0 else "ctg") + mtxt._(mtxt.f_t(n2, d2) + "*pi")
+
+    if (f1 == 0 and d1 == 2 and n1 % 2 == 1) or (f1 == 1 and (d1 == 1 or n1 == 0)):
+        answer = v1 + " не существует"
+    elif (f2 == 0 and d2 == 2 and n2 % 2 == 1) or (f2 == 1 and (d2 == 1 or n2 == 0)):
+        answer = v2 + " не существует"
+    else:
+        a1 = math.tan(n1 / d1 * math.pi) if f1 == 0 else 1 / math.tan(n1 / d1 * math.pi)
+        a2 = math.tan(n2 / d2 * math.pi) if f2 == 0 else 1 / math.tan(n2 / d2 * math.pi)
+        answer = v1 + (" > " if a1 > a2 else (" < " if a1 < a2 else "=")) + v2
+
+    return v1 + " и " + v2, answer
+
+def otmette_na_osi():
+# Отметьте на оси tg|ctg точки +- k(3)|1|2|k(3)/3
+    c = rnd.randint(0, 1)
+    s = rnd.choice([-1, 1])
+    t = rnd.randint(0, 1)
+
+    v = ("-" if s < 0 else "") + "k(3)" if t == 0 else "1/k(3)"
+
+    return ("tg" if c == 0 else "ctg") + " точки " + v, "график"
+
+def otmette_na_edinichnoj_okruzhnosti_ugol_dlya_kotorogo():
+# Отметьте на единичной окружности угол для которого tg|ctg = +|- 1/2|1/3|1/4|1|2|3|4|5
+    c = rnd.randint(0, 1)
+    t = rnd.randint(0, 1)
+    s = rnd.choice([-1, 1])
+
+    if t == 0:
+        v = str(s * rnd.randint(0, 5))
+    else:
+        v = mtxt.f_t(s, rnd.randint(2, 4))
+
+    return ("tg" if c == 0 else "ctg") + "=" + v, "график"
+
+def suschestvuet_li():
+# Существует ли: tg|ctg для угла 2pi/3 // взять любые и углы и те где нет tg или ctg
+    c = rnd.randint(0, 1)
+    t = rnd.randint(0, 1)
+
+    if t == 0:
+        if c == 1:
+            n = rnd.randint(1, 6)
+            d = mrnd.rnd_w(n + 1, 7, [2 * n])
+            k = rnd.randint(-3, 3)
+            n, d = mf.s_fraction((n + 2 * k * d, d))
+        else:
+            n = rnd.randint(1, 6)
+            d = rnd.randint(n + 1, 7)
+            k = rnd.randint(-3, 3)
+            n, d = mf.s_fraction((n + 2 * k * d, d))
+    else:
+        if c == 0:
+            n = 1
+            d = 2
+            k = rnd.randint(-5, 5)
+            n, d = mf.s_fraction((n + k * d, d))
+        else:
+            n = 0
+            d = 1
+            k = rnd.randint(-5, 5)
+            n, d = mf.s_fraction((n + k * d, d))
+
+    return ("tg" if c == 0 else "ctg") + " для угла " + mtxt.f_t(n, d) + "*pi", "да" if t == 0 else "нет"
+
+def vyichislite659():
+# Вычислите arccos(cos(+/-9)) // тоже самое с arcsin
+    c = rnd.randint(0, 1)
+    x = mrnd.rnd_w(-10, 10, [0])
+
+    # Определяем в какой четверти лежит угол x
+    xgrad = x * 180 / math.pi
+    ch360 = int(xgrad) % 360
+    if ch360 > 0:
+        ch = 1 if ch360 < 90 else (2 if ch360 < 180 else (3 if ch360 < 270 else 4))
+    else:
+        ch = 4 if -ch360 < 90 else (3 if -ch360 < 180 else (2 if -ch360 < 270 else 1))
+
+    def get_n(a):
+        if a > 0:
+            return int(a // 1)
+        else:
+            return -int((-a + 1) // 1)
+
+    answer = ""
+    if c == 0:
+        if ch in [1, 2]:
+            n = get_n(x/(2 * math.pi))
+            answer = str(x) + ((mtxt.fc(int(-2 * n), False) + "pi") if n != 0 else "")
+        if ch == 3:
+            n = get_n(x/(4 * math.pi) - 1/4)
+            nsh = get_n(x/(2 * math.pi) - 1/2 - 2 * n)
+            answer = ((mtxt.fc(int(2 + 4 * n + 2 * nsh)) + "pi") if ((2 + 4 * n + 2 * nsh) != 0) else "") + mtxt.s(-x)
+        if ch == 4:
+            n = get_n(x/(4 * math.pi) + 1/8)
+            nsh = get_n(x/(2 * math.pi) + 1/4 - 2 * n)
+            answer = ((mtxt.fc(int(4 * n + 2 * nsh)) + "pi") if (4 * n + 2 * nsh != 0) else "") + mtxt.s(-x)
+
+    if c == 1:
+        if ch in [4, 1]:
+            n = get_n(x/(2 * math.pi) + 1/4)
+            answer = str(x) + ((mtxt.fc(int(-2 * n), False) + "pi") if n != 0 else "")
+        if ch == 2:
+            n = get_n(x/(4 * math.pi) - 1/8)
+            nsh = get_n(x/(2 * math.pi) - 1/4 - 2 * n)
+            answer = ((mtxt.fc(int(1 + 4 * n + 2 * nsh)) + "pi") if (1 + 4 * n + 2 * nsh != 0) else "") + mtxt.s(-x)
+        if ch == 3:
+            n = get_n(x/(4 * math.pi) + 1/4)
+            nsh = get_n(x/(2 * math.pi) + 3/4 - 2 * n)
+            answer = ((mtxt.fc(int(-1 + 4 * n + 2 * nsh)) + "pi") if (-1 + 4 * n + 2 * nsh != 0) else "") + mtxt.s(-x)
+
+
+    return ("arccos" if c == 0 else "arcsin") + mtxt._(("cos" if c == 0 else "sin") + mtxt._(x)), \
+          answer
+
+def vyichislite658():
+# Вычислите arccos(cos(7pi/4)) // тоже самое с arcsin
+    c = rnd.randint(0, 1)
+
+    d = rnd.randint(2, 6)
+    n = (rnd.randint(1, d - 1)) if c == 0 else (rnd.choice([-1, 1]) * rnd.randint(1, d //2))
+
+    n, d = mf.s_fraction((n, d))
+    answer = mtxt.f_t(n, d) + "*pi"
+
+    n += rnd.randint(1, 3) * 2 * d
+    txt = mtxt.f_t(n, d) + "*pi"
+
+    return ("arccos" if c == 0 else "arcsin") + mtxt._(("cos" if c == 0 else "sin") + txt), answer
+
+def verno_li_utverzhdenie657():
+# Верно ли утверждение: arcsin|arccos(sin|cos(2pi/3)) = 2pi/3
+    c = rnd.randint(0, 1)
+    t = rnd.randint(0, 1)
+
+    if c == 0:
+        d = rnd.randint(2, 10)
+        if t == 0:
+            n = rnd.randint(1, d - 1)
+        else:
+            if rnd.randint(0, 1):
+                n = rnd.randint(d + 1, 12)
+            else:
+                n = -rnd.randint(1, d - 1)
+
+    if c == 1:
+        d = rnd.randint(2, 10)
+        if t == 0:
+            n = rnd.choice([-1, 1]) * rnd.randint(1, d // 2)
+        else:
+            n = rnd.choice([-1, 1]) * rnd.randint(d // 2 + 1,  12)
+
+    n, d = mf.s_fraction((n, d))
+    v = mtxt.f_t(n, d) + "*pi"
+
+    return ("arccos" if c == 0 else "arcsin") + mtxt._(("cos" if c == 0 else "sin") + mtxt._(v)) + " = " + v, \
+           "да" if t == 0 else "нет"
+
+def reshite_neravenstvo656():
+# Решите неравенство: sin|cos(x) <|> +|- 1/2 // Все табличные значения и некоторые дроби
+    c = rnd.randint(0, 1)
+    lr = rnd.randint(0, 1)
+    vs = ["-1", "-k(3)/2", "-k(2)/2", "-1/2", "-1/3", "-1/4", "-1/5", "0", "1/5", "1/4", "1/3", "1/2", "k(2)/2", "k(3)/2", "1"]
+    v = rnd.choice(vs)
+
+    v1 = {
+        "-1": "pi" if c == 0 else "3pi/2",
+        "-k(3)/2": "5pi/6" if c == 0 else "4pi/3" ,
+        "-k(2)/2": "3pi/4" if c == 0 else "5pi/4",
+        "-1/2": "2pi/3" if c == 0 else "7pi/6",
+        "-1/3": "arccos(-1/3)" if c == 0 else "pi + arcsin(1/3)",
+        "-1/4": "arccos(-1/4)" if c == 0 else "pi + arcsin(1/4)",
+        "-1/5": "arccos(-1/5)" if c == 0 else "pi + arcsin(1/5)",
+        "0": "pi/2" if c == 0 else "0",
+        "1/5": "arccos(1/5)" if c == 0 else "arcsin(1/5)",
+        "1/4": "arccos(1/4)" if c == 0 else "arcsin(1/4)",
+        "1/3": "arccos(1/3)" if c == 0 else "arcsin(1/3)",
+        "1/2": "pi/3" if c == 0 else "pi/6",
+        "k(2)/2": "pi/4" if c == 0 else "pi/4",
+        "k(3)/2": "pi/6" if c == 0 else "pi/3",
+        "1": "0" if c == 0 else "pi/2",
+    }[v]
+
+    v2 = {
+        "-1": "3pi" if c == 0 else "7pi/2",
+        "-k(3)/2": "7pi/6" if c == 0 else "5pi/3",
+        "-k(2)/2": "5pi/4" if c == 0 else "7pi/4",
+        "-1/2": "4pi/3" if c == 0 else "11pi/6",
+        "-1/3": "pi + arccos(1/3)" if c == 0 else "2pi - arcsin(1/3)",
+        "-1/4": "pi + arccos(1/4))" if c == 0 else "2pi - arcsin(1/4)",
+        "-1/5": "pi + arccos(1/5)" if c == 0 else "2pi - arcsin(1/5)",
+        "0": "3pi/2" if c == 0 else "pi",
+        "1/5": "2pi - arccos(1/5)" if c == 0 else "pi - arcsin(1/5)",
+        "1/4": "2pi - arccos(1/4)" if c == 0 else "pi - arcsin(1/4)",
+        "1/3": "2pi - arccos(1/3)" if c == 0 else "pi - arcsin(1/3)",
+        "1/2": "5pi/3" if c == 0 else "5pi/6",
+        "k(2)/2": "7pi/4" if c == 0 else "3pi/4",
+        "k(3)/2": "11pi/6" if c == 0 else "2pi/3",
+        "1": "2pi" if c == 0 else "5pi/2",
+    }[v]
+
+    if v in ["1", "-1"]:
+        answer = "нет решений" if lr == 0 and v == "1" or lr == 1 and v == "-1" else ("любое кроме " + v1 + "+2pi*n")
+    else:
+        if lr == 0 or v == "0":
+            answer = "[" + v2 + "+2pi*(n-1), " + v1 + "+2pi*n" + "], n - целое"
+        else:
+            answer = "[" + v1 + "+2pi*n, " + v2 + "+2pi*n" + "], n - целое"
+
+    return ("cos" if c == 0 else "sin") + "(x)" + (">" if lr == 0 else "<") + v, answer
+
 def zashtrihujte_vse_uglyi_a_dlya_kotoryih_verno():
 # Заштрихуйте все углы альфа, для которых верно sin|cos(альфа) >|< k(2)/2|1/3
     c = rnd.randint(0, 1)
@@ -1203,7 +1501,7 @@ def postroj_grafik_funktsii604():
     return "y=" + str(k) + "/x", "график"
 
 def chemu_ravno603():
-# чему равно: -3/x, если x = 0 | +бесконечность | -бесконечность
+# чему равно: -3/x, если x = 0 | +oo | -oo
     k = mrnd.rnd_w(-7, 7, [-1, 0, 1])
     t = rnd.randint(1, 4)
     if t == 1:
@@ -1583,7 +1881,7 @@ def ispolzuya_grafiki_funktsij():
     x2n, x2d = mf.s_fraction((x2[0], x2[1]))
 
     if (v == 0 and a > 0) or (v == 1 and a < 0):
-        answer = "(-бесконечность; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +бесконечность)"
+        answer = "(-oo; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +oo)"
     else:
         answer = "[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]"
 
@@ -1611,7 +1909,7 @@ def na_kakih_otrezkah_grafik_funktsii():
     x2n, x2d = mf.s_fraction((x2[0], x2[1]))
 
     if (v == 0 and a > 0) or (v == 1 and a < 0):
-        answer = "(-бесконечность; " + mtxt.f_t(x1n, x1d) + ") и (" + mtxt.f_t(x2n, x2d) + "; +бесконечность)"
+        answer = "(-oo; " + mtxt.f_t(x1n, x1d) + ") и (" + mtxt.f_t(x2n, x2d) + "; +oo)"
     else:
         answer = "(" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + ")"
 
@@ -1947,16 +2245,16 @@ def reshi_neravenstvo548():
     slr = lr if s1 > 0 else 1 - lr
     if slr == 0:
         if t1 > 0:
-            answer = sk(0, 1) + l(1) + "; " + l(2) + sk(1, 2) + " и " + sk(0, 3) + l(3) + "; +бесконечность)"
+            answer = sk(0, 1) + l(1) + "; " + l(2) + sk(1, 2) + " и " + sk(0, 3) + l(3) + "; +oo)"
         else:
             if ts[1][0] != ts[1][1]:
-                answer = "(-бесконечность; " + l(2) + sk(1, 2) + " и " + sk(0, 3) + l(3) + "; +бесконечность)"
+                answer = "(-oo; " + l(2) + sk(1, 2) + " и " + sk(0, 3) + l(3) + "; +oo)"
             else:
-                answer = sk(0, 3) + l(3) + "; +бесконечность)"
+                answer = sk(0, 3) + l(3) + "; +oo)"
     else:
         if t1 > 0:
             if ts[1][0] != ts[1][1]:
-                answer = "(-бесконечность; " + l(1) + sk(1, 1) + " и " + sk(0, 2) + l(2) + "; " + l(3) + sk(1, 3)
+                answer = "(-oo; " + l(1) + sk(1, 1) + " и " + sk(0, 2) + l(2) + "; " + l(3) + sk(1, 3)
             else:
                 answer = sk(0, 2) + l(2) + "; " + l(3) + sk(1, 3)
         else:
@@ -2000,9 +2298,9 @@ def reshi_neravenstvo547():
 
     if lr == 0:
         answer = sk(0, 1) + mtxt.f_t(ts[0][0], ts[0][1]) + "; " + mtxt.f_t(ts[1][0], ts[1][1]) + sk(1, 2) + " и " + \
-            sk(0, 3) + mtxt.f_t(ts[2][0], ts[2][1]) + "; +бесконечность)"
+            sk(0, 3) + mtxt.f_t(ts[2][0], ts[2][1]) + "; +oo)"
     else:
-        answer = "(-бесконечность; " + mtxt.f_t(ts[0][0], ts[0][1]) + sk(1, 1) + " и " + sk(0, 2) + mtxt.f_t(ts[1][0], \
+        answer = "(-oo; " + mtxt.f_t(ts[0][0], ts[0][1]) + sk(1, 1) + " и " + sk(0, 2) + mtxt.f_t(ts[1][0], \
             ts[1][1]) + "; " + mtxt.f_t(ts[2][0], ts[2][1]) + sk(1, 3)
 
     return str(n1) + "/" + mtxt._(mtxt.fc(k1) + "t" + "-" + str(m1)) + mtxt.p0m1(s) + \
@@ -2041,7 +2339,7 @@ def reshi_neravenstvo545():
         osn1 = str(pow(n, k1) + rnd.randint(1, 2))
         osn2 = str(pow(n, k2) + rnd.randint(1, 2))
 
-    answer = "(0; +бесконечность)\{1}" if fpol == lr else "нет решений"
+    answer = "(0; +oo)\{1}" if fpol == lr else "нет решений"
 
     return mtxt.fc(a) + mtxt.pow_text(mtxt._(mtxt.log_text(n, "x")), 2) + " - " + \
            mtxt.fc(b) + " * " + mtxt.log_text(osn1, "x") + " * " + mtxt.log_text(osn2, "x") + " " + (">" if lr == 0 else "<") + " 0", \
@@ -2099,7 +2397,7 @@ def reshi_neravenstvo542():
     if a > 0 and lr == 0:
         answer = "[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]"
     else:
-        answer = "(-бесконечность; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +бесконечность)"
+        answer = "(-oo; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +oo)"
 
     return mtxt.log_text("1/" + str(n), mtxt._(px.get_str())) + (" >= " if lr == 0 else " <= ") + str(k), \
            answer
@@ -2138,7 +2436,7 @@ def reshi_neravenstvo539():
         x1n, x2n = x2n, x1n
         x1d, x2d = x2d, x1d
 
-    answer = ("(-бесконечность; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +бесконечность)") if lr == 0 else ("[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]")
+    answer = ("(-oo; " + mtxt.f_t(x1n, x1d) + "] и [" + mtxt.f_t(x2n, x2d) + "; +oo)") if lr == 0 else ("[" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + "]")
 
     return mtxt.fc(a) + ("*" if a != 1 else "") + mtxt.pow_text(pow(n, 2), mtxt._("x" + ("+" if k > 0 else "") + str(k))) + \
            " + " + mtxt.pow_text(n, mtxt._(s)) + (" >= " if lr == 0 else " <= ") + str(-b), \
@@ -2176,7 +2474,7 @@ def reshi_neravenstvo538():
     x2n, x2d = mf.s_fraction(x2)
 
     return mtxt.pow_text(str(n) if obr == 1 else mtxt._("1/" + str(n)), mtxt._(px.get_str())) + (" > " if lr == 0 else " < ") + str(pow(n, k)),\
-        ("(-бесконечность; " + mtxt.f_t(x1n, x1d) + "), (" + mtxt.f_t(x2n, x2d) + "; +бесконечность)" ) if alr == 0 else \
+        ("(-oo; " + mtxt.f_t(x1n, x1d) + "), (" + mtxt.f_t(x2n, x2d) + "; +oo)" ) if alr == 0 else \
                ("(" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + ")")
 
 
@@ -2202,7 +2500,7 @@ def reshi_neravenstvo537():
     x2n, x2d = mf.s_fraction(x2)
 
     return px.get_str() + (" > " if lr == 0 else " < ") + "0", \
-           ("(-бесконечность; " + mtxt.f_t(x1n, x1d) + "), (" + mtxt.f_t(x2n, x2d) + "; +бесконечность)" ) if lr == 0 else \
+           ("(-oo; " + mtxt.f_t(x1n, x1d) + "), (" + mtxt.f_t(x2n, x2d) + "; +oo)" ) if lr == 0 else \
                ("(" + mtxt.f_t(x1n, x1d) + "; " + mtxt.f_t(x2n, x2d) + ")")
 
 
@@ -2252,13 +2550,13 @@ def verno_li_utverzhdenie536():
         ot = rnd.randint(1, 4)
         ots = ""
         if ot == 1:
-            ots = "(-бесконечность; -1)"
+            ots = "(-oo; -1)"
         if ot == 2:
             ots = "(-1; 0)"
         if ot == 3:
             ots = "(0; 1)"
         if ot == 4:
-            ots = "(1; +бесконечность)"
+            ots = "(1; +oo)"
         text = "функция y = " + mtxt.log_text(osn, "x") + " " + ("возрастает" if v == 0 else "убывает") + \
             " на отрезке " + ots
 
@@ -3375,7 +3673,7 @@ def kakovyi_oblast_opredelenij_i_oblast_znachenij_funktsii444():
     k = rnd.randint(2, 9)
     return "y=x^-" + str(k), \
            "область определения: вся числовая ось, область значений: " + (
-           "любое число" if k % 2 != 0 else "[0, +бесконечность]")
+           "любое число" if k % 2 != 0 else "[0, +oo]")
 
 def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsii():
     # построй в одной системе координат графики функции y = x^-2 и y = x^-4
@@ -3389,20 +3687,20 @@ def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsii():
     return "y=x^-" + str(k1) + " и y=x^-" + str(k2), ''
 
 def kakaya_iz_funktsii_lezhit():
-    # какая из функции быстрее: убывает|возрастает на отрезке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность) y = x^-2 или x^-4
+    # какая из функции быстрее: убывает|возрастает на отрезке (-oo, -1) | (-1, 0) | (0, 1) | (1, +oo) y = x^-2 или x^-4
     uc = rnd.randint(0, 3)
     uv = rnd.randint(0, 1)
     k1 = rnd.randint(2, 9)
     k2 = mrnd.rnd_w(2, 9, [k1])
 
     if uc == 0:
-        ucs = "(-бесконечность, -1)"
+        ucs = "(-oo, -1)"
     if uc == 1:
         ucs = "(-1, 0)"
     if uc == 2:
         ucs = "(0, 1)"
     if uc == 3:
-        ucs = "(1, +бесконечность)"
+        ucs = "(1, +oo)"
 
     uvs = ("выше" if uv == 0 else "ниже")
 
@@ -3433,18 +3731,18 @@ def kakaya_iz_funktsii_lezhit():
     return uvs + " на отрезке " + ucs + ": " + f1 + " или " + f2, answer
 
 def vozrastaet_ili_ubyivaet_funktsiya441():
-# y = x^-3 на участке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность)
+# y = x^-3 на участке (-oo, -1) | (-1, 0) | (0, 1) | (1, +oo)
     uc = rnd.randint(0, 3)
     k = rnd.randint(2, 9)
 
     if uc == 0:
-        ucs = "(-бесконечность, -1)"
+        ucs = "(-oo, -1)"
     if uc == 1:
         ucs = "(-1, 0)"
     if uc == 2:
         ucs = "(0, 1)"
     if uc == 3:
-        ucs = "(1, +бесконечность)"
+        ucs = "(1, +oo)"
 
     if k % 2 == 0:
         answer = "возрастает " if uc not in [2, 3] else "убывает"
@@ -3464,7 +3762,7 @@ def kakovyi_oblast_opredelenij_i_oblast_znachenij_funktsii():
 # каковы область определений и область значений функции y = x^3 (n=[0, 10])
     k = rnd.randint(2, 9)
     return "какова область определения и область значений функции y=x^" + str(k), \
-           "область определения: вся числовая ось, область значений: " + ("любое число" if k % 2 != 0 else "[0, +бесконечность]")
+           "область определения: вся числовая ось, область значений: " + ("любое число" if k % 2 != 0 else "[0, +oo]")
 
 def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij():
 # построй в одной системе координат графики функции y = x^2 и y = x^4
@@ -3473,20 +3771,20 @@ def postroj_v_odnoj_sisteme_koordinat_grafiki_funktsij():
     return "построй в одной системе координат графики функций: y=x^" + str(k1 * 2) + " и y=x^" + str(k2 * 2), ''
 
 def kakaya_iz_funktsii_lezhit446():
-# какая из функции быстрее: убывает|возрастает на отрезке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность) y = x^2 или x^4
+# какая из функции быстрее: убывает|возрастает на отрезке (-oo, -1) | (-1, 0) | (0, 1) | (1, +oo) y = x^2 или x^4
     uc = rnd.randint(0, 3)
     uv = rnd.randint(0, 1)
     k1 = rnd.randint(2, 9)
     k2 = mrnd.rnd_w(2, 9, [k1])
 
     if uc == 0:
-        ucs = "(-бесконечность, -1)"
+        ucs = "(-oo, -1)"
     if uc == 1:
         ucs = "(-1, 0)"
     if uc == 2:
         ucs = "(0, 1)"
     if uc == 3:
-        ucs = "(1, +бесконечность)"
+        ucs = "(1, +oo)"
 
     uvs = ("выше" if uv == 0 else "ниже")
 
@@ -3517,18 +3815,18 @@ def kakaya_iz_funktsii_lezhit446():
     return uvs + " на отрезке " + ucs + ": y=x^" + str(k1) + " или y=x^" + str(k2), answer
 
 def vozrastaet_ili_ubyivaet_funktsiya():
-# y = x^3 на участке (-бесконечность, -1) | (-1, 0) | (0, 1) | (1, +бесконечность)
+# y = x^3 на участке (-oo, -1) | (-1, 0) | (0, 1) | (1, +oo)
     uc = rnd.randint(0, 3)
     k = rnd.randint(2, 9)
 
     if uc == 0:
-        ucs = "(-бесконечность, -1)"
+        ucs = "(-oo, -1)"
     if uc == 1:
         ucs = "(-1, 0)"
     if uc == 2:
         ucs = "(0, 1)"
     if uc == 3:
-        ucs = "(1, +бесконечность)"
+        ucs = "(1, +oo)"
 
     if k % 2 == 0:
         answer = "возрастает " if uc in [2, 3] else "убывает"

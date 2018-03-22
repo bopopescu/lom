@@ -1,4 +1,5 @@
 import random as rnd
+import gen.genutils.math_factors as mf
 
 def common_base_power():
     n = rnd.randint(2, 10)
@@ -78,3 +79,32 @@ def get_ch_mn(m):
             return str(rnd.randint(1, 100) * s) + "/" + str(rnd.choice([11, 13, 17, 19, 23])), at
         if t == 3:
             return str(rnd.randint(11, 99)/10 * s), at
+
+def rnd_quad_pol(r=2, f=False):
+    if r == 0:
+        an, ad, bn, bd, cn, cd = mf.get_quad_pol(None, None)
+        return an, ad, bn, bd, cn, cd, None, 1, None, 1
+    if r == 1:
+        if not f:
+            x = rnd_w(-10, 10, [0])
+            an, ad, bn, bd, cn, cd = mf.get_quad_pol(x, None)
+            return an, ad, bn, bd, cn, cd, x, 1, None, 1
+        else:
+            x1n = rnd_w(-5, 5, [0])
+            x1d = rnd_w(2, 7, [0, 1, x1n])
+            an, ad, bn, bd, cn, cd = mf.get_quad_pol(x1n, None, x1d, None)
+            return an, ad, bn, bd, cn, cd, x1n, x1d, None, 1
+    if r == 2:
+        if f:
+            x1n = rnd_w(-10, 10, [0])
+            x2n = rnd_w(-10, 10, [0, x1n])
+            x1d = rnd_w(2, 7, [0, 1, x1n])
+            x2d = rnd_w(2, 7, [0, 1, x2n])
+            an, ad, bn, bd, cn, cd = mf.get_quad_pol(x1n, x1d, x2n, x2d)
+            return an, ad, bn, bd, cn, cd, x1n, x1d, x2n, x2d
+        else:
+            x1 = rnd_w(-10, 10, [0])
+            x2 = rnd_w(-10, 10, [0, x1])
+            an, ad, bn, bd, cn, cd = mf.get_quad_pol(x1, x2)
+            return an, ad, bn, bd, cn, cd, x1, 1, x2, 1
+
