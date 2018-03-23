@@ -128,32 +128,3 @@ def quad_pol_by_roots(x1, x2):
     c = x1[0] * x2[0]
     return a, b, c
 
-def get_quad_pol(x1n, x2n, x1d=1, x2d=1):
-    if x1d == 0 or x2d == 0:
-        raise ZeroDivisionError
-
-    if x1n is None and x2n is None:
-        bn = mrnd.rnd_w(-10, 10, [0])
-        an = mrnd.rnd_w(-10, 10, [0, bn])
-        cn = int(pow(bn, 2) / (4 * an)) + rnd.randint(2, 5)
-        ad = 1
-        bd = 1
-        cd = 1
-
-    if x1n is not None or x2n is not None:
-        if x1n is not None:
-            xn, xd = x1n, x1d
-        else:
-            xn, xd = x2n, x2d
-        xn, xd = s_fraction((xn, xd))
-        bn, bd = s_fraction((2 * xn, xd))
-        cn, cd = s_fraction((pow(xn, 2), pow(xd, 2)))
-
-    if x1n is not None and x2n is not None:
-        x1n, x1d = s_fraction((x1n, x1d))
-        x2n, x2d = s_fraction((x2n, x2d))
-
-        bn, bd = s_fraction((-(x1n * x2d + x1d * x2n), x1d * x2d))
-        cn, cd = s_fraction((x1n * x2n, x1d * x2d))
-
-    return 1, 1, bn, bd, cn, cd
