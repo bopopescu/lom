@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
     <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+
     <script>
         (function (factory) {
             if (typeof define === 'function' && define.amd) {
@@ -252,7 +253,10 @@
                         updateTasks();
                         ga('send', 'event', 'Класс', 'Смена');
                     }
-            });
+                });
+
+                $('#session-note').on('keyup', onSessionNoteKeyUp);
+                $('#session-note-button').on('click', onSessionNoteButtonClick);
 
             function getTasksInCookies() {
                 res = {};
@@ -305,12 +309,14 @@
             function onGroupKeyUp() {
                 groupIndex = Number($(this).attr('name'));
                 session['groups'][groupIndex]['note'] = $(this).val();
+                updateGroupNoteButton(groupIndex);
             }
 
             function onSessionNoteKeyUp() {
                 session_note = $('#session-note');
                 text = session_note.val();
                 session['note'] = text;
+                updateSessionNoteButton();
             }
 
             function updateLayout() {
@@ -560,6 +566,48 @@
                 updateSelectedTasks();
             }
 
+            function updateSessionNote() {
+                session_note = $('#session-note');
+                if (session['note'] != "") {
+                    session_note.removeClass('d-none');
+                } else {
+                    session_note.addClass('d-none');
+                }
+            }
+
+            function onSessionNoteButtonClick() {
+                $('#session-note').toggleClass('d-none');
+                updateSessionNoteButton();
+            }
+
+            function onGroupNoteButtonClick() {
+                groupClass = '#preview-group-' + $(this).attr('name');
+                $(groupClass + ' .group-note').toggleClass('d-none');
+            }
+
+            function updateSessionNoteButton() {
+                if (session['note'] == "") {
+                    $('#session-note-button').removeClass('button-bold');
+                    $('#session-note-button').text('Написать комментарий для всего задания');
+                } else {
+                    $('#session-note-button').addClass('button-bold');
+                    if ($('#session-note').hasClass('d-none')) {
+                        $('#session-note-button').text('Просмотреть комментарий для всего задания');
+                    } else {
+                        $('#session-note-button').text('Закрыть комментарий для всего задания');
+                    }
+                }
+            }
+
+            function updateGroupNoteButton(index) {
+                selector = '#preview-group-' + index.toString() + ' .task-note-button';
+                if (session['groups'][index]['note'] == "") {
+                    $(selector).removeClass('button-bold');
+                } else {
+                    $(selector).addClass('button-bold');
+                }
+            }
+
             function updatePreview() {
                 $('#preview').find('.task-item').remove();
                 groups = session['groups'];
@@ -570,7 +618,7 @@
                     var $clone = $template.clone()
                             .removeClass('d-none')
                             .addClass('task-item')
-                            .removeAttr('id')
+                            .attr('id', 'preview-group-' + i.toString())
                             .insertBefore($template)
                             .attr('name', task);
 
@@ -578,7 +626,12 @@
                         .text((i + 1).toString() + ". " + groups[i]['tlt']);
                     $clone.find('.tasks-list .task-remove-button')
                         .attr('id', task)
-                        .on('click', onRemoveTaskFromPreviewClick);
+                        .on('click', onRemoveTaskFromPreviewClick)
+                    $clone.find('.tasks-list .task-note-button')
+                        .attr('name', i.toString())
+                        .on('click', onGroupNoteButtonClick);
+                    $clone.find('.tasks-list .group-note')
+                        .addClass((groups[i]['note'] == "") ? "d-none" : "");
 
                     task_items = groups[i]['texts'];
                     for (j = 0; j < task_items.length; j++) {
@@ -591,12 +644,14 @@
                         .attr('name', i.toString())
                         .text(groups[i]['note'])
                         .on('keyup', onGroupKeyUp);
+
+                    updateGroupNoteButton(i);
                 }
 
                 // Обновляем заметку к сессии
-                session_note = $('#session-note');
-                session_note.text(session['note']);
-                session_note.on('keyup', onSessionNoteKeyUp);
+                $('#session-note').text(session['note']);
+                updateSessionNote();
+                updateSessionNoteButton();
             }
 
             function updateStudent(){
@@ -691,6 +746,19 @@
             font-weight: bold;
         }
 
+        .task-remove-button {
+            color: red;
+        }
+
+        .task-note-button, #session-note-button {
+            color: #152032;
+        }
+
+        .button-bold {
+            font-weight: bold;
+        }
+
+
     </style>
     <title>Ломоносов: математика</title>
 
@@ -766,8 +834,10 @@
             <div id="preview" class="d-none col-sm-12 col-lg-4 py-4 px-3">
 
                 <div class="row">
-                    <button class="">+Заметка</button>
-                    <textarea id="session-note"></textarea>
+                    <div class="col">
+                        <button id="session-note-button" class="btn btn-sm btn-link">Комментарий ко всему заданию</button>
+                        <textarea id="session-note" class="form-control"></textarea>
+                    </div>
                 </div>
 
                 <div class="row">
@@ -775,9 +845,9 @@
                         <div class="row tasks-list">
                             <div class="col-12 item-head">
                                 <b></b>
-                                <button class="task-remove-button" type="">Убрать</button>
-                                <button>+Заметка</button>
-                                <textarea class="group-note"></textarea>
+                                <button class="task-remove-button btn btn-sm btn-link" type="">X</button>
+                                <button class="task-note-button btn btn-sm btn-link">С</button>
+                                <textarea class="group-note form-control"></textarea>
                             </div>
                         </div>
                     </div>
