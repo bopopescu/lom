@@ -9,6 +9,62 @@ import gen.genutils.math_trig as tr
 import statistics as st
 import math
 
+def proizvedenie_dvuh_posledovatelnyih_natrualnyih_chisel():
+# Произведение двух последовательных натруальных чисел:
+    # на 6 больше меньшего | большего из них
+    # равно 6
+    # на 6 меньше суммы квадратов этих числел
+    # на 6 больше разности квадратов этих чисел
+
+    t = rnd.randint(0, 3)
+    x = rnd.randint(2, 11)
+
+    if t == 0:
+        m = rnd.randint(0, 1)
+        if m == 0: #меньшего
+            text = "на " + str(pow(x, 2)) + " больше меньшего из них"
+        if m == 1:
+            text = "на " + str(pow(x, 2) - 1) + " больше большего из них"
+
+    if t == 1:
+        text = "равно " + str(pow(x, 2) + x)
+
+    if t == 2:
+        text = "на " + str(pow(x, 2) + x + 1) + " меньше суммы квадратов этих чисел"
+
+    if t == 3:
+        text = "на " + str(pow(x, 2) - x - 1) + " больше разности квадратов этих чисел"
+
+    return text + ". Найдите эти числа", str(x) + ", " + str(x + 1)
+
+
+def reshite_uravnenie666():
+# Решите уравнение: (x^2 - x)/2 + x/3 = -1
+
+    x1 = mrnd.rnd_w(-10, 10, [0])
+    x2 = mrnd.rnd_w(-10, 10, [0, x1])
+    a =mrnd.rnd_w(-3, 3, [0, x1, x2])
+    b = mrnd.rnd_w(-10, 10, [0])
+    d = rnd.randint(2, 5)
+    c = b * d - a * d * (x1 + x2)
+    pn, pd = mf.s_fraction((a * x1 * x2, a * d * (x1 + x2) - b*d))
+
+    return mtxt._(mtxt.fc(a) + "x^2" + mtxt.fc(-b, is_first=False) + "x") + "/" + (mtxt._(c) if c < 0 else str(c)) + " + x/" +str(d) + "=" + mtxt.f_t(pn, pd), \
+           str(x1) + ", " + str(x2)
+
+
+def reshite_uravnenie665():
+# Решите уравнение: (x - 1)(x + 2) = 2x + 3
+    x1 = mrnd.rnd_w(-10, 10, [0])
+    x2 = mrnd.rnd_w(-10, 10, [0, x1])
+    a = mrnd.rnd_w(-10, 10, [0, x1, x2])
+    b = mrnd.rnd_w(-10, 10, [0, x1, x2, a])
+    p = x1 + x2 - (a + b)
+    q = a * b - x1 * x2
+
+    return mtxt._("x" + mtxt.s(-a)) + mtxt._("x" + mtxt.s(-b)) + "=" + mtxt.fc(p) + "x" + mtxt.s(q), \
+           str(x1) + ", " + str(x2)
+
 
 def reshite_uravnenie664():
 # Решите уравнение: (x - 1)(x+3/2)(x^2 - 6x - 7) = 0
