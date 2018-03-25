@@ -24,9 +24,12 @@
 
             // Заполняем задания
             groups = session['groups'];
+            $g_template = $('#group_template')
+            $gn_template = $('#group_note_template')
+            $t_template = $('#task_template')
+
             for(i = 0; i < groups.length; i++){
-                var $g_template = $('#group_template') ,
-                    $g_clone = $g_template
+                 $g_clone = $g_template
                         .clone()
                         .removeClass('d-none')
                         .removeAttr('id')
@@ -34,18 +37,16 @@
                         .insertBefore($g_template);
 
                 if (groups[i]['note'].length > 0) {
-                    var $gn_template = $('#group_note_template') ,
-                        $gn_clone = $gn_template
+                     $gn_clone = $gn_template
                             .clone()
+                            .find('i')
                             .removeClass('d-none')
                             .removeAttr('id')
-                            .text()
+                            .text(groups[i]['note'])
                             .insertBefore($g_template);
                 }
-
                 for(j = 0; j < groups[i].texts.length; j++) {
-                    var $t_template = $('#task_template') ,
-                        $t_clone = $t_template
+                     $t_clone = $t_template
                             .clone()
                             .removeClass('d-none')
                             .removeAttr('id')
@@ -70,9 +71,9 @@
           <p id="session-note-caption"><b>Напутствие:</b></p>
           <p id="session-note-body"></p>
       </div>
-      <div id="group_template" class="d-none row taskgroup"></div>
-      <div id="task_template" class="d-none row px-4 task"></div>
-      <div id="group_note_template" class="d-none row px-1"></div>
+          <div id="group_template" class="d-none row taskgroup"></div>
+          <div id="task_template" class="d-none row px-4 task"></div>
+          <div id="group_note_template" class="d-none row px-1"><i></i>></div>
       </div>
   </div>
 </body>

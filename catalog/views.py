@@ -86,7 +86,10 @@ def get_session_data(session_id):
     else:
         s['student_name'] = ""
         s['student_login'] = ""
-    s['note'] = objSession.note
+    if objSession.note:
+        s['note'] = objSession.note
+    else:
+        s['note'] = ""
 
     session_groups_list = []
     for tg in m.TaskSessionGroup.objects.all():
@@ -95,12 +98,12 @@ def get_session_data(session_id):
             tg_dict = {}
             tg_dict['tlt'] = tg.tlt_text
             tg_dict['task_code'] = tg.task.code
-            tg_dict['note'] = tg.note
+            tg_dict['note'] = "" if not tg.note else tg.note
 
             texts_list = []
             for t in m.TaskText.objects.all():
                 if t.group == tg:
-                    texts_list.append((t.text, t.atext, t.note, t.order))
+                    texts_list.append((t.text, t.atext, t.note if t.note else "", t.order))
 
             texts_list.sort(key=lambda x: x[3])
             tg_dict['texts'] = [(x[0], x[1], x[2]) for x in texts_list]
@@ -190,18 +193,20 @@ def add_session(request):
     data = json.loads(request.body.decode('utf-8'))
 
     # Создаем сессию
-    st = m.Student.objects.filter(login = data['student']).first()
-    s = m.Session(student=st)
+    st = m.Student.objects.filter(login = data['session']['student_login']).first()
+    s = m.Session(student=st, note=data['session']['note'])
     s.save()
 
+
+    groups = data['session']['groups']
     # Создаем группы
-    for i, task_dict in enumerate(data['tasks']):
+    for i, task_dict in enumerate(groups):
         task = m.Task.objects.get(code=task_dict['task_code'])
-        tg = m.TaskSessionGroup(session=s, task=task, order=i)
+        tg = m.TaskSessionGroup(session=s, task=task, order=i, note=task_dict['note'])
         tg.save()
 
         # Создаем тексты
-        texts = data['tasks'][i]['texts']
+        texts = groups[i]['texts']
         for i, txt in enumerate(texts):
             t = m.TaskText(group=tg, text=txt[0], atext=txt[1], order=i+1)
             t.save()
