@@ -127,16 +127,40 @@
 
         }));
     </script>
-    <script id="work-template" type="text/template">
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title></title>
-        </head>
-        <body></body>
-        </html>
+    <script text="text/javascript">
+
+        class TaskText {
+            constructor (text = "", answer = "", note = "") {
+                this.text = text;
+                this.answer = answer;
+                this.note = note;
+            }
+        }
+
+        class Group {
+            constructor (groups = {}) {
+                this.taskCode = "";
+                this.tlt = "";
+                this.note = "";
+                this.texts = [];
+            }
+        }
+
+        class Session {
+            constructor (session = {}) {
+                this.id = "id" in session : session['id'] ? -1;
+                this.studentName = "student_name" in session : session['student_name'] ? "";
+                this.studentLogin = "student_login" in session : session['student_login'] ? "";
+                this.note = "note" in session: session['note'] ? "";
+                this.groups = [];
+                if ("groups" in session) {
+                    for (i = 0; i < session['groups'].length; i++) {
+                        group = session['groups'][i];
+                        this.groups.append(new Group(group));
+                    }
+            }
+        }
+
     </script>
     <script type="text/javascript">
         var concepts = JSON.parse('{{ concepts|safe }}');
